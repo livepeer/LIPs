@@ -73,15 +73,15 @@ future prtoocol upgrades, the LIP is designated as "Rejected".
 After an implementation for the LIP is complete, it is set to be included in a scheduled protocol upgrade. Once the protocol upgrade is complete, the LIP is designated as
 "Final".
 
-### Specification Motivation
-
-The structure of this LIP process is heavily inspired by [Ethereum's EIP-1](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1.md). The goal is to use this structure
-as a foundational starting point from which the LIP process can evolve with the needs of the Livepeer community.
-
 ### LIP Formats and Templates
 
 LIPs should be written in [markdown](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet) format. [This template](../LIP-X.md) should be used for every
 new LIP.
+
+## Specification Motivation
+
+The structure of this LIP process is heavily inspired by [Ethereum's EIP-1](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1.md). The goal is to use this structure
+as a foundational starting point from which the LIP process can evolve with the needs of the Livepeer community.
 
 ## Copyright
 
