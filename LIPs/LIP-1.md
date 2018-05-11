@@ -1,4 +1,4 @@
-    LIP: <to be assigned>
+    LIP: 1
     Title: LIP Process, Purpose and Guidelines
     Author: Yondon Fu <yondon@livepeer.org>
     Type: Meta
@@ -53,7 +53,7 @@ Each LIP must have a champion - someone who writes the LIP using the appropriate
 community consensus around the proposed idea.
 
 Parties interested in submitting a LIP are encouraged to vet an idea publicly before actually writing the proposal to save time and to ensure that the idea presented is
-applicable to the entire Livepeer community. Examples of appropriate public forums to gauge interest around an LIP include [the Livepeer subreddit](https://www.reddit.com/r/livepeer), [the issues for this repository](https://github.com/livepeer/LIPs/issues), [the Livepeer Discord channels](https://discord.gg/7wRSUGX) and [the Livepeer forum](https://forum.livepeer.org/).
+applicable to the entire Livepeer community. Examples of appropriate public forums to gauge interest around an LIP include [the issues for this repository](https://github.com/livepeer/LIPs/issues), [the Livepeer forum](https://forum.livepeer.org/), [the Livepeer Discord channels](https://discord.gg/7wRSUGX) and [the Livepeer subreddit](https://www.reddit.com/r/livepeer).
 
 After receiving feedback from the community and refining the technical language around an idea, a draft LIP should be submitted as [pull request](https://github.com/livepeer/LIPs/pulls).
 
@@ -63,15 +63,13 @@ Once a draft LIP is merged, additional changes to the draft may be submitted as 
 If the type of the LIP is informational or meta, the LIP can be designated as "Final" if there are no remaining technical objections. Some LIPs (such as this one) are meant to be
 continually updated in the future and will remain in the "Draft" stage. If the type of the LIP is standard track, the LIP is presented and discussed at a core developer meeting.
 
-If the participants of the core developer meeting do not voice any technical objections, the LIP is designated as "Accepted" and planned for immediate adoption. If there
-are technical objections such that immediate adoption of the LIP is infeasible without additional changes to the LIP, the LIP remains in the "Draft" stage and may be
+If the participants of the core developer meeting do not voice any technical objections, the LIP is designated as "Accepted" and planned for immediate implementation and adoption. If there are technical objections such that immediate adoption of the LIP is infeasible without additional changes to the LIP, the LIP remains in the "Draft" stage and may be
 reconsidered after further changes in additional core developer meetings. If there are technical objections such that the immediate adoption of the LIP is infeasbile
 such that the LIP cannot be included in the next schedule protocol upgrade (perhaps for the sake of limiting complexity in one particular upgrade), it is designated
 as "Deferred" and may be reconsidered for a future protocol upgrade. If there are technical objections such that the LIP would not be reconsidered for any
 future prtoocol upgrades, the LIP is designated as "Rejected".
 
-After an implementation for the LIP is complete, it is set to be included in a scheduled protocol upgrade. Once the protocol upgrade is complete, the LIP is designated as
-"Final".
+After an implementation for the LIP is complete, it is set to be included in a scheduled protocol upgrade. Once the protocol upgrade is complete, the LIP is designated as "Final".
 
 ### LIP Formats and Templates
 
