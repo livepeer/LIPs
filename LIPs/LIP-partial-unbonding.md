@@ -23,8 +23,6 @@ The potential weakness is that it will now be easier to constantly withdraw LPT 
 
 ## Specification
 
-*Note: this is the start of the discussion so I leave out many of the second order updates that will need to be made until we can discuss whether this approach is reasonable. Examples include calculating the delegator status and how those status' are used, and any logic related to calculating unbonding and withdrawl amounts.*
-
 ### Data structures
 
 Currently the fact that a delegator is unbonding is tracked via the `withdrawRound` attribute on the delegator struct. Instead, an unbonding action can create a new `UnbondingLock` struct.
