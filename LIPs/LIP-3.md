@@ -1,4 +1,4 @@
-    LIP: <to be assigned>
+    LIP: 3
     Title: Ability to update registered solver in LivepeerVerifier
     Author: Yondon Fu <yondon@livepeer.org>
     Type: Standard Track
