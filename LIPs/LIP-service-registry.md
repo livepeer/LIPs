@@ -43,11 +43,11 @@ The function `setServiceURI(string _serviceURI)` does the following:
 service URI. The address is indexed thus allowing clients to filter for `ServiceURIUpdate()` events specifically for changes from a specific caller address
 
 The function `getServiceURI(address _addr)` does the following:
-- Return the service URI endpoint stored for the caller
+- Return the service URI endpoint stored for the address `_addr`
 
 The contract is upgradeable using the delegate proxy pattern. Let `ServiceRegistryProxy` be the proxy contract and `ServiceRegistryTarget` be the target implementation contract.
 
-A block `upgradeBlock` and round `upgradeRound` (`upgradeBlock` must be a block in `upgradeRound`) are selected. At a block before `upgradeBlock` within `upgradeRound`, both `ServiceRegistryProxy` and `ServiceRegistryTarget` will be deployed with addresses `ServiceRegistryProxyAddress` and `ServiceRegistryTargetAddress` respectively. At block `upgradeBlock`, the owner of the Controller contract will call `Controller.setContract(contractId("ServiceRegistry"), ServiceRegistryProxyAddress)` and `Controller.setContract(contractId("ServiceRegistryTarget"), ServiceRegistryTargetAddress)`. After both of these Controller transactions are mined, the upgrade is complete and `ServiceRegistryProxy` will be registry contract used by transcoders to publish service URI endpoints.
+A round `upgradeRound` is selected. The following operations can be performed while the system is paused and after all operations are completed the system can be unpaused. In some blocks of `upgradeRound`, both `ServiceRegistryProxy` and `ServiceRegistryTarget` will be deployed with addresses `ServiceRegistryProxyAddress` and `ServiceRegistryTargetAddress` respectively. In some later blocks the owner of the Controller contract will call `Controller.setContract(contractId("ServiceRegistry"), ServiceRegistryProxyAddress)` and `Controller.setContract(contractId("ServiceRegistryTarget"), ServiceRegistryTargetAddress)`. After both of these Controller transactions are mined, the upgrade is complete and `ServiceRegistryProxy` will be the registry contract used by transcoders to publish service URI endpoints.
 
 ## Specification Rationale
 
