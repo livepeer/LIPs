@@ -1,4 +1,4 @@
-    LIP: <to be assigned>
+    LIP: 9
     Title: Service Registry
     Author: Yondon Fu (@yondon)
     Type: Standard Track
