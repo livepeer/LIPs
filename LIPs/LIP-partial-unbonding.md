@@ -64,11 +64,12 @@ The `unbond(amount)` function would retain the same logic for removing a node fr
 
 ### Events
 
-Update the `Unbond` and `WithdrawStake` events to:
+Update the `Unbond` and `WithdrawStake` events, and add a `Rebond` event:
 
 ```
 event Unbond(address indexed delegate, address indexed delegator, uint256 amount, uint256 withdrawBlock)
 event WithdrawStake(address indexed delegator, uint256 unbondingLockId)
+event Rebond(address indexed delegator, uint256 unbondingLockId)
 ```
 
 ### Delegator Status
