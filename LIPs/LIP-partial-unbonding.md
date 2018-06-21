@@ -34,11 +34,13 @@ struct UnbondingLock {
 }
 ```
 
-and the Delegator struct removes `withdrawRound` and adds
+and the Delegator struct deprecates `withdrawRound` and adds `totalUnbondingLocks` and `unbondingLocks`:
 
 ```
 struct Delegator {
     ...
+    uint256 withdrawRound; // DEPRECATED - DO NOT USE
+    uint256 lastClaimRound;
     uint256 totalUnbondingLocks;
     mapping (uint256 => UnbondingLock) unbondingLocks;
 }:
