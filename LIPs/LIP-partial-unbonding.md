@@ -46,7 +46,7 @@ struct Delegator {
 }:
 ```
 
-Whenever a new unbonding lock is created totalUnbondingLocks would be incremented and the new lock would be assigned totalUnbondingLocks - 1as its ID.
+Whenever a new unbonding lock is created totalUnbondingLocks would be incremented and the new lock would be assigned totalUnbondingLocks - 1 as its ID.
 
 A benefit in using a mapping instead of an array is that it allows the addition of additional variables to the UnbondingLock struct in a future upgrade if necessary.
 
@@ -87,7 +87,7 @@ There will no longer be any notion of a delegator being in the Unbonding state. 
 
 This design means that:
 
-* Anyone can expect all of the unbonding states for a delegator. It may be slightly inefficient to loop through the full mapping on all keys, but these are reads, and optimizations can probably be made to start at the end and loop backwards.
+* Anyone can inspect all of the unbonding states for a delegator. It may be slightly inefficient to loop through the full mapping on all keys, but these are reads, and optimizations can probably be made to start at the end and loop backwards.
 * Delegators themselves can take responsibility for keeping track of their `unbondingLocks` and `withdrawing` when they are ready 1-by-1.
 * There is not significant overhead as far as accounting. We still only allow one transcoder per address, however users can still unbond partially, split the LPT into different accounts, and bond towards other transcoders from that account, or transfer the LPT where they wish.
 * Delegators can still rebond freely if they change their mind.
