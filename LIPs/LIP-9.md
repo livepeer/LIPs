@@ -1,6 +1,6 @@
     LIP: 9
     Title: Service Registry
-    Author: Yondon Fu (@yondon)
+    Author: Yondon Fu (@yondonfu)
     Type: Standard Track
     Status: Draft
     Created: 5/31/18

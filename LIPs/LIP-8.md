@@ -1,4 +1,4 @@
-    LIP: <to be assigned>
+    LIP: 8
     Title: Enable Partial Unbonding
     Author: Doug Petkanics (@dob), Yondon Fu (@yondonfu)
     Type: Standard Track
