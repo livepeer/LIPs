@@ -1,4 +1,4 @@
-    LIP: <to be assigned>
+    LIP: 11
     Title: Bond Event Details
     Author: Yondon Fu (@yondonfu)
     Type: Standard Track
