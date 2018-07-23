@@ -2,7 +2,7 @@
     Title: Enable Partial Unbonding
     Author: Doug Petkanics (@dob), Yondon Fu (@yondonfu)
     Type: Standard Track
-    Status: Draft
+    Status: Accepted
     Created: 2018-05-20
 
 ## Abstract
@@ -107,9 +107,13 @@ This is a breaking change to the protocol. Clients will need to update in order 
 
 Another option would be to add an overloaded `unbond(amount)` method, and to update the logic of `unbond()` to call `unbond(amount)` with the full staked amount. Similar with `withdraw()` and `withdraw(index)`.
 
+## Test Cases
+
+See `test/integration/Delegation.js` and `test/unit/BondingManager.js` in https://github.com/livepeer/protocol/pull/225/files.
+
 ## Implementation
 
-TBD
+See `contracts/bonding/BondingManager.sol` and `contracts/bonding/IBondingManager.sol` in https://github.com/livepeer/protocol/pull/225/files.
 
 ## Copyright
 

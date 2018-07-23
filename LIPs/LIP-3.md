@@ -2,7 +2,7 @@
     Title: Ability to update registered solver in LivepeerVerifier
     Author: Yondon Fu <yondon@livepeer.org>
     Type: Standard Track
-    Status: Draft
+    Status: Accepted 
     Created: 2018-05-15
 
 ## Abstract
@@ -64,11 +64,11 @@ Most protocol users will not be affected by this change because prior to this up
 
 ## Test Cases
 
-TODO
+See `test/integration/FailedVerificationSlashing.js`, `test/unit/LivepeerVerifier.js` in https://github.com/livepeer/protocol/pull/222/files.
 
 ## Implementation
 
-TODO
+See `contracts/verification/LivepeerVerifier.sol` in https://github.com/livepeer/protocol/pull/222/files.
 
 ## Copyright
 

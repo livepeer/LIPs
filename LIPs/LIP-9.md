@@ -2,8 +2,8 @@
     Title: Service Registry
     Author: Yondon Fu (@yondonfu)
     Type: Standard Track
-    Status: Draft
-    Created: 5/31/18
+    Status: Accepted
+    Created: 2018-05-31
 
 ## Abstract
 
@@ -61,27 +61,11 @@ This is a backward incompatible change because a transcoder will need to submit 
 
 ## Test Cases
 
-TODO
+See `test/unit/ServiceRegistry.js` in https://github.com/livepeer/protocol/pull/223/files.
 
 ## Implementation
 
-```
-contract ServiceRegistry is ManagerProxyTarget {
-    struct Record {
-        string serviceURI;
-    }
-
-    mapping (address => Record) private records;
-
-    function setServiceURI(string _serviceURI) external {
-        records[msg.sender].serviceURI = _serviceURI;
-    }
-
-    function getServiceURI(address _addr) public view returns (string) {
-        return records[msg.sender].serviceURI;
-    }
-}
-```
+See `contracts/ServiceRegistry.sol` in https://github.com/livepeer/protocol/pull/223/files.
 
 ## Copyright
 

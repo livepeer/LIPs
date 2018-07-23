@@ -2,8 +2,8 @@
     Title: Bond Event Details
     Author: Yondon Fu (@yondonfu)
     Type: Standard Track
-    Status: Draft
-    Created: 6/27/18
+    Status: Accepted
+    Created: 2018-06-27
 
 ## Abstract
 
@@ -56,11 +56,11 @@ This is a backwards incompatible change because the event signature hash for the
 
 ## Test Cases
 
-TODO
+See `test/unit/BondingManager.js` in https://github.com/livepeer/protocol/pull/227/files.
 
 ## Implementation
 
-TODO
+See `contracts/bonding/BondingManager.sol` and `contracts/bonding/IBondingManager.sol` in https://github.com/livepeer/protocol/pull/227/files.
 
 ## Copyright
 
