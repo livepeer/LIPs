@@ -2,7 +2,7 @@
     Title: Bond Event Details
     Author: Yondon Fu (@yondonfu)
     Type: Standard Track
-    Status: Accepted
+    Status: Final
     Created: 2018-06-27
 
 ## Abstract

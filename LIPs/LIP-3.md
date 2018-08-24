@@ -2,7 +2,7 @@
     Title: Ability to update registered solver in LivepeerVerifier
     Author: Yondon Fu <yondon@livepeer.org>
     Type: Standard Track
-    Status: Accepted 
+    Status: Final 
     Created: 2018-05-15
 
 ## Abstract

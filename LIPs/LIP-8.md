@@ -2,7 +2,7 @@
     Title: Enable Partial Unbonding
     Author: Doug Petkanics (@dob), Yondon Fu (@yondonfu)
     Type: Standard Track
-    Status: Accepted
+    Status: Final
     Created: 2018-05-20
 
 ## Abstract

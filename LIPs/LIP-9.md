@@ -2,7 +2,7 @@
     Title: Service Registry
     Author: Yondon Fu (@yondonfu)
     Type: Standard Track
-    Status: Accepted
+    Status: Final
     Created: 2018-05-31
 
 ## Abstract
