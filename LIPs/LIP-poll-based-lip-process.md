@@ -69,7 +69,7 @@ The champion(s) of a LIP is typically expected to create a poll if the LIP is as
 
 If there is a desire to consider multiple LIPs in a single bundle (i.e. for a scheduled protocol upgrade with multiple changes) then all LIPs in the bundle need to:
 
-- Specify the parent LIP that they are a part of using the **Parts-Of** field in the LIP header preamble.
+- Specify the parent LIP that they are a part of using the **Part-Of** field in the LIP header preamble.
 - Be assigned the Proposed status.
 
 The parent LIP for a bundle needs to:
@@ -80,7 +80,7 @@ The parent LIP for a bundle needs to:
 Once the parent LIP is assigned the Proposed status, a poll can be created for it. From here, the following outcomes are possible:
 
 - The parent LIP is assigned the Accepted status. Each of the individual LIPs referenced by the parent LIP would also be assigned the Accepted status.
-- The parent LIP is assigned the Rejected status. Each of the individual LIPs referenced by the parent LIP would remain in the Proposed status. If there is a desire to consider an individual LIP standalone at this point, the LIP champion can remove the **Parts-Of** field.
+- The parent LIP is assigned the Rejected status. Each of the individual LIPs referenced by the parent LIP would remain in the Proposed status. If there is a desire to consider an individual LIP standalone at this point, the LIP champion can remove the **Part-Of** field.
 
 ## Specification Rationale
 
