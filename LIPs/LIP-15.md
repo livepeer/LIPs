@@ -1,4 +1,4 @@
-    LIP: <to be assigned>
+    LIP: 15
     Title: Poll Based LIP Process
     Author: Yondon Fu (@yondonfu), Doug Petkanics (@dob)
     Type: Meta
