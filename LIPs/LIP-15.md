@@ -4,7 +4,7 @@
     Type: Meta
     Status: Draft
     Created: 2020-03-31
-    Requires: <to be assigned>
+    Requires: 16
     Part-Of: <to be assigned>
     Discussions-To: https://github.com/livepeer/LIPs/issues/15
 
