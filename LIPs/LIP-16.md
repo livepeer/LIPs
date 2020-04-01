@@ -1,4 +1,4 @@
-    LIP: <to be assigned>
+    LIP: 16
     Title: Stake Based Polling System
     Author: Yondon Fu (@yondonfu)
     Type: Meta
