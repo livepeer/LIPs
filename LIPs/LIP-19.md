@@ -1,4 +1,4 @@
-    LIP: <to be assigned>
+    LIP: 19
     Title: Poll Based Governance
     Author: Yondon Fu (@yondonfu), Doug Petkanics (@dob)
     Type: Meta
