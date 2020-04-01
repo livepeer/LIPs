@@ -5,7 +5,7 @@
     Status: Draft
     Created: 2020-03-31
     Requires: 16
-    Part-Of: <to be assigned>
+    Part-Of: 19
     Discussions-To: https://github.com/livepeer/LIPs/issues/15
 
 ## Abstract
