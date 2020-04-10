@@ -2,7 +2,7 @@
     Title: Poll Based Governance
     Author: Yondon Fu (@yondonfu), Doug Petkanics (@dob)
     Type: Meta
-    Status: Draft
+    Status: Last Call
     Created: 2020-03-30
     Requires: 15, 16
 
