@@ -2,7 +2,7 @@
     Title: Stake Based Polling System
     Author: Yondon Fu (@yondonfu)
     Type: Meta
-    Status: Draft
+    Status: Last Call
     Created: 2020-03-30
     Part-Of: 19
     Discussion-To: https://github.com/livepeer/LIPs/issues/16
