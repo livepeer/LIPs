@@ -1,10 +1,12 @@
-    LIP: 19
-    Title: Poll Based Governance
-    Author: Yondon Fu (@yondonfu), Doug Petkanics (@dob)
-    Type: Meta
-    Status: Last Call
-    Created: 2020-03-30
-    Requires: 15, 16
+---
+lip: 19
+title: Poll Based Governance
+author: Yondon Fu (@yondonfu), Doug Petkanics (@dob)
+type: Meta
+status: Last Call
+created: 2020-03-30
+requires: 15, 16
+---
 
 ## Abstract
 

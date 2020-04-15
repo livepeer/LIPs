@@ -1,12 +1,14 @@
-    LIP: 15
-    Title: Poll Based LIP Process
-    Author: Yondon Fu (@yondonfu), Doug Petkanics (@dob)
-    Type: Meta
-    Status: Last Call
-    Created: 2020-03-31
-    Requires: 16
-    Part-Of: 19
-    Discussions-To: https://github.com/livepeer/LIPs/issues/15
+---
+lip: 15
+title: Poll Based LIP Process
+author: Yondon Fu (@yondonfu), Doug Petkanics (@dob)
+type: Meta
+status: Last Call
+created: 2020-03-31
+requires: 16
+part-of: 19
+discussions-to: https://github.com/livepeer/LIPs/issues/15
+---
 
 ## Abstract
 
@@ -51,7 +53,7 @@ The following optional fields in the header preamble described in the [LIP-X tem
 
 The following diagram describes the path to adoption for a LIP:
 
-![LIPAdoption](./assets/lip-adoption.png)
+![LIPAdoption](../assets/lip-adoption.png)
 
 #### The Last Call Period
 

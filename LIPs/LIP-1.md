@@ -1,9 +1,11 @@
-    LIP: 1
-    Title: LIP Process, Purpose and Guidelines
-    Author: Yondon Fu <yondon@livepeer.org>
-    Type: Meta
-    Status: Draft
-    Created: 2018-05-10
+---
+lip: 1
+title: LIP Process, Purpose and Guidelines
+author: Yondon Fu <yondon@livepeer.org>
+type: Meta
+status: Draft
+created: 2018-05-10
+---
 
 ## Abstract
 

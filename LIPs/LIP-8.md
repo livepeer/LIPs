@@ -1,9 +1,11 @@
-    LIP: 8
-    Title: Enable Partial Unbonding
-    Author: Doug Petkanics (@dob), Yondon Fu (@yondonfu)
-    Type: Standard Track
-    Status: Final
-    Created: 2018-05-20
+---
+lip: 8
+title: Enable Partial Unbonding
+author: Doug Petkanics (@dob), Yondon Fu (@yondonfu)
+type: Standard Track
+status: Final
+created: 2018-05-20
+---
 
 ## Abstract
 
