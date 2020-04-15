@@ -1,9 +1,11 @@
-    LIP: 3
-    Title: Ability to update registered solver in LivepeerVerifier
-    Author: Yondon Fu <yondon@livepeer.org>
-    Type: Standard Track
-    Status: Final 
-    Created: 2018-05-15
+---
+lip: 3
+title: Ability to update registered solver in LivepeerVerifier
+author: Yondon Fu <yondon@livepeer.org>
+type: Standard Track
+status: Final 
+created: 2018-05-15
+---
 
 ## Abstract
 

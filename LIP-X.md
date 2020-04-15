@@ -1,11 +1,15 @@
-    LIP: <to be assigned>
-    Title: <LIP Title>
-    Author: <list of authors' names and/or username(s), or name(s) and email(s), e.g. (use with parentheses or triangular brackets) FirstName LastName (@GitHubUsername), FirstName LastName <foo@bar.com>, FirstName (@GitHubUsername) and GitHubUsername (@GitHubUsername)>
-    Type: <Standard Track | Informational | Meta>
-    Status: Draft
-    Created: <date created on, in ISO 8601 (yyyy-mm-dd) format>
-    Requires (*optional): <LIP number(s)>
-    Replaces (*optional): <LIP number(s)>
+---
+lip: <to be assigned>
+title: <LIP Title>
+author: <list of authors' names and/or username(s), or name(s) and email(s), e.g. (use with parentheses or triangular brackets) FirstName LastName (@GitHubUsername), FirstName LastName <foo@bar.com>, FirstName (@GitHubUsername) and GitHubUsername (@GitHubUsername)>
+type: <Standard Track | Informational | Meta>
+status: Draft
+created: <date created on, in ISO 8601 (yyyy-mm-dd) format>
+discussions-to: <URL>
+requires (*optional): <LIP number(s)>
+replaces (*optional): <LIP number(s)>
+part-of (*optional): <LIP number(s)>
+---
 
 This is the suggested template for new LIPs.
 

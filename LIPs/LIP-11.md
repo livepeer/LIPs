@@ -1,9 +1,11 @@
-    LIP: 11
-    Title: Bond Event Details
-    Author: Yondon Fu (@yondonfu)
-    Type: Standard Track
-    Status: Final
-    Created: 2018-06-27
+---
+lip: 11
+title: Bond Event Details
+author: Yondon Fu (@yondonfu)
+type: Standard Track
+status: Final
+created: 2018-06-27
+---
 
 ## Abstract
 

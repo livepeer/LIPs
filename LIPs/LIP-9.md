@@ -1,9 +1,11 @@
-    LIP: 9
-    Title: Service Registry
-    Author: Yondon Fu (@yondonfu)
-    Type: Standard Track
-    Status: Final
-    Created: 2018-05-31
+---
+lip: 9
+title: Service Registry
+author: Yondon Fu (@yondonfu)
+type: Standard Track
+status: Final
+created: 2018-05-31
+---
 
 ## Abstract
 

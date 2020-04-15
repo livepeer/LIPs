@@ -1,11 +1,13 @@
-    LIP: 16
-    Title: Stake Based Polling System
-    Author: Yondon Fu (@yondonfu)
-    Type: Meta
-    Status: Last Call
-    Created: 2020-03-30
-    Part-Of: 19
-    Discussion-To: https://github.com/livepeer/LIPs/issues/16
+---
+lip: 16
+title: Stake Based Polling System
+author: Yondon Fu (@yondonfu)
+type: Meta
+status: Last Call
+created: 2020-03-30
+part-of: 19
+discussion-to: https://github.com/livepeer/LIPs/issues/16
+---
 
 ## Abstract
 
