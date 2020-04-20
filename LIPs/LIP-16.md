@@ -114,32 +114,24 @@ While the contract does not support crowdfunding the poll creation cost, anyone 
 
 ```
 contract Poll {        
-    // Emitted when an account submits a yes vote
-    // This event can be indexed to tally all yes votes
-    event Yes(address indexed voter);
-    // Emitted when an account submits a no vote
-    // This event can be indexed to tally all no votes
-    event No(address indexed voter);
+    // Emitted when an account submits a vote
+    // This event can be indexed to tally all votes for each choiceID
+    event Vote(address indexed voter, uint256 choiceID);
     
     /**
-     * @dev Vote yes for the poll's proposal.
+     * @dev Vote for `_choiceID` regarding the poll's proposal
+     * @param _choiceID The ID of the choice
      */
-    function yes() external;
-    
-    /**
-     * @dev Vote no for the poll's proposal.
-     */
-    function no() external;
+    function vote(uint256 _choiceID) external;
 }
 ```
 
 **Voting in a poll**
 
-- `yes()` will emit a `Yes` event containing the sender's address
-- `no()` will emit a `No` event containing the sender's address
-- There are no restrictions on the number of times that a sender can call `yes()` or `no()`
-- There are no restrictions preventing a sender from calling both `yes()` or `no()`
-- The interpretation of the `Yes` and `No` events emitted by this contract is left for the off-chain indexer
+- `vote()` will emit a `Vote` event containing the sender's address and the `choiceID` voted for
+- There are no restrictions on the number of times that a sender can call `vote()`
+- There are no restrictions preventing a sender from calling `vote()` with different values for `choiceID`
+- The interpretation of the `Vote` events emitted by this contract is left for the off-chain indexer
 
 ### Off-Chain Indexer
 
@@ -148,9 +140,11 @@ The following is a specficiation for the off-chain indexer. An implementation mu
 The off-chain indexer keeps track of the following entities:
 
 ```
+// These are the available voting choices
+// Additional voting choices should be added to this enum
 enum PollChoice @entity {
-    No
-    Yes
+    Yes // choiceID = 0
+    No  // choiceID = 1
 } 
     
 type Poll @entity {
@@ -202,21 +196,18 @@ The indexer will index the following poll related events:
     - `poll.threshold = threshold`
 - When a new poll entity is created, the indexer should start indexing the new `Poll` contract. The indexer should stop indexing the `Poll` contract at `poll.endBlock` because any votes cast after `poll.endBlock` will not be counted.
 
-`Yes(address voter)`
+`Vote(address voter, uint256 choiceID)`
 
 - If a voter entity does not exist, create one
     - `voter.id = voter`
     - `voter.poll = Poll(<POLL_CONTRACT_ADDRESS>)`
 - Update the voter entity
-    - `voter.choice = PollChoice.Yes`
+    - If `choiceID = 0`
+        - `voter.choice = PollChoice.Yes`
+    - If `choiceID = 1`
+        - `voter.choice = PollChoice.No`
 
-`No(address voter)`
-
-- If a voter entity does not exist, create one
-    - `voter.id = voter`
-    - `voter.poll = Poll(<POLL_CONTRACT_ADDRESS)`
-- Update the voter entity
-    - `voter.choice = PollChoice.No`
+Note that if a `Vote` event is received with a `choiceID` that is not specified above then the vote will be ignored.
 
 For all polls tracked by the indexer, the poll tally should be final at `poll.endBlock`. The final tally computed by the indexer should be equal to the result of the following computation:
 
