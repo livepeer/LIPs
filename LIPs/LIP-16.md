@@ -3,7 +3,7 @@ lip: 16
 title: Stake Based Polling System
 author: Yondon Fu (@yondonfu)
 type: Meta
-status: Last Call
+status: Proposed
 created: 2020-03-30
 part-of: 19
 discussion-to: https://github.com/livepeer/LIPs/issues/16
@@ -46,7 +46,7 @@ Recall that active stake refers to LPT staked to active orchestrators. An active
 Voting power is given to all staked LPT which includes both active and inactive staked LPT. As a result, both active orchestrators and their delegators AND inactive orchestrators and their delegators will be able to participate in polls. The amount of stake that backs a vote is referred to as "voting stake".
 
 - `QUORUM`: The minimum percentage of stake that needs to vote in a poll in order for the poll result to be considered valid.
-- `THRESHOLD`: The minimum percentage of voting stake that needs to vote yes
+- `QUOTA`: The minimum percentage of voting stake that needs to vote yes
 in a poll in order for the poll result to be considered a signal to accept the proposal.
 - `POLL_PERIOD`: The duration of the poll in blocks.
 - `POLL_CREATION_COST`: The amount of LPT that needs to be burned when creating a poll.
@@ -55,14 +55,14 @@ in a poll in order for the poll result to be considered a signal to accept the p
 
 ### Parameters
 
-`QUORUM` and `THRESHOLD` are fixed point numbers using 6 decimal places of precision which matches the precision currently used in the [protocol contracts](https://github.com/livepeer/protocol/blob/d6bcb03337839071f1a90e391760ef1f7660f836/contracts/libraries/MathUtils.sol#L10).
+`QUORUM` and `QUOTA` are fixed point numbers using 6 decimal places of precision which matches the precision currently used in the [protocol contracts](https://github.com/livepeer/protocol/blob/d6bcb03337839071f1a90e391760ef1f7660f836/contracts/libraries/MathUtils.sol#L10).
 
 - `QUORUM`: 333300
     - This value represents a 33.33% quourum.
     - The rationale for this lower value is to have a looser requirement during initial tests of the system when the friction of voting is higher due to the operational obstacles of submitting vote transactions during a fixed time period especially if private keys are secured in cold storage. The expectation is that this value can be increased as LPT holders become more comfortable with participating in polls and as tooling becomes more mature to lower the friction of voting.
-- `THRESHOLD`: 500000
-    - This value represents a 50% threshold.
-    - The rationale for this value is that a majority threshold requirement is simple to understand.
+- `QUOTA`: 500000
+    - This value represents a 50% quota.
+    - The rationale for this value is that a majority quota requirement is simple to understand.
 - `POLL_PERIOD`: 57600
     - This value is the number of blocks in 10 rounds.
     - The rationale for this value is that 10 rounds is approximately 10 days (given 12-15s block times) which provides LPT holders time to participate in a poll even if they go offline for a week.
@@ -76,7 +76,7 @@ in a poll in order for the poll result to be considered a signal to accept the p
 ```
 contract PollCreator {
     uint256 public constant QUORUM;
-    uint256 public constant THRESHOLD;
+    uint256 public constant QUOTA;
     uint256 public constant POLL_PERIOD;
     uint256 public constant POLL_CREATION_COST;
     ILivepeerToken public constant LPT;
@@ -89,7 +89,7 @@ contract PollCreator {
     	bytes memory proposal,
     	uint256 endBlock,
     	uint256 quorum,
-    	uint256 threshold
+    	uint256 quota 
     );
     
     /**
@@ -156,7 +156,7 @@ type Poll @entity {
     quorum BigInt!
     // This is a fixed point number that will need to be converted into a %
     // prior to displaying to a user
-    threshold BigInt!
+    quota BigInt!
     // This will be updated with each vote
     tally PollTally
     voters: [Voter!] @derivedFrom(field: poll)
@@ -186,14 +186,14 @@ type Voter @entity {
 
 The indexer will index the following poll related events:
 
-`PollCreated(address poll, bytes proposal, uint256 endBlock, uint256 quorum, uint256 threshold)`
+`PollCreated(address poll, bytes proposal, uint256 endBlock, uint256 quorum, uint256 quota)`
 
 - Store a poll entity
     - `poll.id = poll`
     - `poll.proposal = proposal`
     - `poll.endBlock = endBlock`
     - `poll.quorum = quorum`
-    - `poll.threshold = threshold`
+    - `poll.quota = quota`
 - When a new poll entity is created, the indexer should start indexing the new `Poll` contract. The indexer should stop indexing the `Poll` contract at `poll.endBlock` because any votes cast after `poll.endBlock` will not be counted.
 
 `Vote(address voter, uint256 choiceID)`
@@ -237,12 +237,12 @@ The poll tally that is finalized at `poll.endBlock` should be used to determine 
 - `totalVoteStake = poll.tally.yes + poll.tally.no`
 - If `totalVoteStake < (totalStake * poll.quorum) / 1000000`
     - The poll result is invalid because quorum was not met
-- If `poll.tally.yes > (totalVoteStake * poll.threshold) / 1000000`
+- If `poll.tally.yes > (totalVoteStake * poll.quota) / 1000000`
     - The poll result is yes
 - Else
     - The poll result is no
 
-The above fixed point calculations use 100000 as the divisor because `poll.quorum` and `poll.threshold` are fixed point numbers with 6 decimal points of precision.
+The above fixed point calculations use 100000 as the divisor because `poll.quorum` and `poll.quota` are fixed point numbers with 6 decimal points of precision.
 
 ## Specification Rationale
 
