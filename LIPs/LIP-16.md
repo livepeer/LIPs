@@ -3,7 +3,7 @@ lip: 16
 title: Stake Based Polling System
 author: Yondon Fu (@yondonfu)
 type: Meta
-status: Proposed
+status: Accepted
 created: 2020-03-30
 part-of: 19
 discussion-to: https://github.com/livepeer/LIPs/issues/16

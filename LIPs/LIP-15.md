@@ -3,7 +3,7 @@ lip: 15
 title: Poll Based LIP Process
 author: Yondon Fu (@yondonfu), Doug Petkanics (@dob)
 type: Meta
-status: Proposed
+status: Accepted
 created: 2020-03-31
 requires: 16
 part-of: 19
