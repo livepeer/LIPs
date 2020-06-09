@@ -41,7 +41,7 @@ The Access Control List contains rules that grant or deny access to certain acto
 
 This mechanism grants access based on Ethereum addresses, whether that be an EOA, smart contract or multisig. The access rights can be for either the entire scope of the protocol or modular (cfr. root and users). 
 
-![image](../assets/acl-structure.png)
+![image](../assets/lip-25/acl-structure.png)
 
 
 **Example Implementation**
