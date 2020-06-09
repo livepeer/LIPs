@@ -2,10 +2,11 @@
 lip: 25
 title: Extensible Governance Contract
 author: Nico Vergauwen (@kyriediculous) <nico@livepeer.org>
-type: Meta
+type: Standard
 status: Draft
 created: 2020-06-09
-requires: n/a
+requires: 30
+discussions-to: https://github.com/livepeer/LIPs/issues/25
 ---
 
 ## Abstract
@@ -40,7 +41,7 @@ The Access Control List contains rules that grant or deny access to certain acto
 
 This mechanism grants access based on Ethereum addresses, whether that be an EOA, smart contract or multisig. The access rights can be for either the entire scope of the protocol or modular (cfr. root and users). 
 
-![image](https://user-images.githubusercontent.com/22256858/84168478-bc960580-aa77-11ea-8f0d-12376205ad2e.png)
+![image](../assets/acl-structure.png)
 
 
 **Example Implementation**
@@ -224,10 +225,12 @@ A modular ACL and time delay allows for interesting mechanics and a clear govern
 
 There's mainly two initial values that need to be set 
 
-- The initial _master_ actor 
+- The initial `OWNER` 
 - The `DELAY` for the first actor, if applicable 
 
 It's established already that the first actor of this governance system will be the Livepeer Inc Multisig. Additional actors can be added over time through the Livepeer Governance process. 
+
+`OWNER=0x04746b890d090ae3c4c5df0101cfd089a4faca6c`
 
 The `DELAY` parameter, when opting for a modular or role-based system can differ based on the action being taken. 
 To separate design and initial value discussions a proposal for the initial values can be found [here](https://github.com/livepeer/LIPs/issues/30)
