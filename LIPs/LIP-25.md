@@ -5,8 +5,7 @@ author: Nico Vergauwen (@kyriediculous) <nico@livepeer.org>
 type: Standard
 status: Draft
 created: 2020-06-09
-requires: 30
-discussions-to: https://github.com/livepeer/LIPs/issues/25
+discussions-to: https://github.com/livepeer/LIPs/issues/25, https://github.com/livepeer/LIPs/issues/30
 ---
 
 ## Abstract
@@ -234,6 +233,10 @@ It's established already that the first actor of this governance system will be 
 
 The `DELAY` parameter, when opting for a modular or role-based system can differ based on the action being taken. 
 To separate design and initial value discussions a proposal for the initial values can be found [here](https://github.com/livepeer/LIPs/issues/30)
+
+## Additional Context
+
+- Initial `DELAY` parameter discussion thread: https://github.com/livepeer/LIPs/issues/30
 
 ## Copyright
 
