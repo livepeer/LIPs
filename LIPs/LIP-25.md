@@ -2,7 +2,7 @@
 lip: 25
 title: Extensible Governance Contract
 author: Nico Vergauwen (@kyriediculous) <nico@livepeer.org>
-type: Standard
+type: Standard Track
 status: Draft
 created: 2020-06-09
 discussions-to: https://github.com/livepeer/LIPs/issues/25, https://github.com/livepeer/LIPs/issues/30
