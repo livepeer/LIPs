@@ -28,7 +28,7 @@ The LIP process is a pre-processing step for proposals prior to the creation of 
 
 ### LIP Types
 
-There are three types of LIPs:
+There are four types of LIPs:
 
 - A **Standard Track LIP** describes any changes that affect the Livepeer protocol. Currently, these changes are focused around the Ethereum smart contracts and clients
 that interact with the contracts. However, in the future Standard Track LIPs may be further categorized to capture other components of the Livepeer protocol such as
