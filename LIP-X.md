@@ -2,7 +2,7 @@
 lip: <to be assigned>
 title: <LIP Title>
 author: <list of authors' names and/or username(s), or name(s) and email(s), e.g. (use with parentheses or triangular brackets) FirstName LastName (@GitHubUsername), FirstName LastName <foo@bar.com>, FirstName (@GitHubUsername) and GitHubUsername (@GitHubUsername)>
-type: <Standard Track | Informational | Meta>
+type: <Standard Track | Parameter | Informational | Meta>
 status: Draft
 created: <date created on, in ISO 8601 (yyyy-mm-dd) format>
 discussions-to: <URL>
