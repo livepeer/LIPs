@@ -2,10 +2,10 @@
 lip: 25
 title: Extensible Governance Contract
 author: Nico Vergauwen (@kyriediculous) <nico@livepeer.org>
-type: Standard Track
+type: Standard
 status: Draft
 created: 2020-06-09
-discussions-to: https://github.com/livepeer/LIPs/issues/25, https://github.com/livepeer/LIPs/issues/30
+discussions-to: https://github.com/livepeer/LIPs/issues/25
 ---
 
 ## Abstract
@@ -30,63 +30,27 @@ From a high level this extensible governance system should fulfill following pro
 ## Specification
 
 The extensible governance system will be a Smart Contract deployed on the Ethereum blockchain consisting of following components
-- Access Control List
+- Access Control
 - Staged Execution
 - Batched Execution
 
-### Access Control List
+### Access Control
 
-The Access Control List contains rules that grant or deny access to certain actors to execute code/parameter updates in the Livepeer protocol.
+The new Governance contract, further referred to as `Governor` will take over ownership of the currently deployed `Controller` contract. The `Controller` in it's turn has ownership and a registry of the deployed components in the Livepeer Protocol (e.g. `BondingManager`, `Minter`) so it acts as a proxy through which the `Governor` can execute contract upgrades or parameter updates. 
 
-This mechanism grants access based on Ethereum addresses, whether that be an EOA, smart contract or multisig. The access rights can be for either the entire scope of the protocol or modular (cfr. root and users). 
+Initially ownership of the `Governor` will reside with the Livepeer Inc. Multisig e.g. using the [basic 'Ownable' contract by Open Zeppelin](https://docs.openzeppelin.com/contracts/3.x/access-control#ownership-and-ownable).
 
-![image](../assets/lip-25/acl-structure.png)
+Future iterations could include more complex access control mechanisms such as Role-Based Access Control if the requirements should dictate it. In the end it's a matter of who has ownership over the `Governor`. This can be an EOA, Multisig, Binding Voting Contract or some sort of Access Control List Contract. 
 
+The ability to either
 
-**Example Implementation**
+-  Changing ownership of the `Governor`
 
-An example implementation could bind actors other than `owner` to contract methods at specific target addresses. E.g. _Binding Voting System 1_ is allowed to call `setRoundLength()`on the `RoundsManager` and `setUnbondingPeriod()` on the `BondingManager`. 
+-  Changing owership of the `Controller` to a new `Governor`
 
-```solidity
-contract ACL is Ownable {
+Should provide a clear upgrade path for eventually handing control over to the stakeholders of the Livepeer protocol without a necessity for a more complex ACL design to be in scope for this spec. 
 
-    /// @dev Actor => Contract => Function signature
-    mapping(address => mapping(address => mapping(bytes4 => bool))) _accessRights;
-
-    /**
-    * @dev check whether msg.sender has access rights to execute '_data' at '_target'
-    * @param _actor actor to check rights for
-    * @param _target target contract address
-    * @param _method 4-byte identifier of the method
-    * @return true/false whether 'msg.sender' has sufficient rights
-    */
-    function accessRights(address _actor, address _target, bytes4 _method) public view returns (bool) {
-        return _actor == owner || _accessRights[_actor][_target][_method];
-    }
-
-    /**
-    * @dev set access rights for for an Ethereum address
-    * @param _actor ethereum address to grant access rights
-    * @param _target target contract address '_actor' is allowed to call
-    * @param _methods list of methods on '_target' contract the '_actor' is allowed to call
-    * @param _access list of booleans indicating access rights corresponding to the list of '_methods'
-    */
-    function setAccessRights(address _actor, address _target, bytes4[] memory _methods, bool[] memory _access) public {
-        // Check that 'msg.sender' has sufficient rights to alter ACL rules
-        require(accessRights(msg.sender, address(this), getMethodSignature(msg.data)), "access denied");
-        for (uint256 i = 0; i < _methods.length; i++) {
-            _accessRights[_actor][_target][_methods[i]] = _access[i];
-        }
-    }
-
-    function getMethodSignature(bytes memory _data) public pure returns (bytes4 method) {
-        assembly {
-            method := mload(add(_data, 0x20))
-        }
-    }
-}
-```
-
+![image](../assets/lip-25/governor.png)
 
 ### Staged Updates & Delayed Execution
 
@@ -99,12 +63,15 @@ Time delay can be defined by a parameter, `DELAY`: Number of blocks by which to 
 - allow quicker updates by the core team in the initial stage
 - enable more dynamic protocol pausing/unpausing mechanics (e.g. core team can still initially pause on a very small delay but community can submit a proposal to unpause again on a longer delay)
 
-The exact implementation is still open for discussion but there's several options:
-- Role-based access control 
-- Simple nested map: `map[function sig]map[address]delay`
+The exact implementation is still open for discussion but the following code snippet should give a rough outline of what the logic could look like. 
+
+- Updates (or it's `KECCAK256` hash) can be stored on-chain 
+- Updates will include a block height after which they can be executed
+- `setDelay()` can be used to assign a `DELAY` to a particular governance action (external funtion) and is also a governance action in itself.
+
 
 ```solidity
-contract Staging is ACL {
+contract Staging {
     
     struct Update {
         address target;
@@ -120,7 +87,7 @@ contract Staging is ACL {
     event UpdateStaged(address indexed actor, uint256 id, StagedUpdate stagedUpdate);
     
     /// @dev delays per actor
-    mapping(address => uint256) delays;
+    mapping(address => mapping(bytes 4 => uint256)) delays;
     /// @dev staged updates
     mapping(uint256 => StagedUpdate) public stagedUpdates;
     /// @dev current update count
@@ -148,7 +115,7 @@ contract Staging is ACL {
      * @param _delay number of blocks to delay updates for
      * @notice will revert if 'msg.sender' is not authorized to call this method
      */
-    function setDelay(address _actor, uint256 _delay) public {
+    function setDelay(address _target, uint256 _delay) public {
         require(accessRights(msg.sender, address(this), getMethodSignature(msg.data)), "access denied");
         if (_delay == 0) {
             delete delays[_actor];
@@ -164,8 +131,10 @@ Batched execution allows multiple code/parameter updates to be bundled into a si
 
 Since each parameter change is essentially a contract method call, the raw transaction data can be calculated before actually submitting the transaction to the target contract. Updates can then be executed as a batch as long as the combined set of method calls does not exceed the Ethereum block gas limit. 
 
+The following code snippet should give a rough idea of the necessary logic but should not be considered final code as it's not secure or optimised.
+
 ```solidity
-contract Execution is ACL, Staging {
+contract Execution is Staging {
     
     /// @dev UpdateExecuted is emitted when a staged update has been fully executed
     event UpdateExecuted(address indexed actor, StagedUpdate update);
@@ -197,46 +166,38 @@ The prototype contracts are available at https://ethfiddle.com/2iCPShA1pv
 
 The governance contract's design rationale should establish a clear technical foundation to lay the groundwork for an upgrade path to give control over protocol code/parameters to the stakeholders. This section provides an example of what such an upgrade path might look like without setting explicit milestones. 
 
-1. Deploy governance contract with the core team multisig as `owner`. 
-2. Make core team multisig subject to a time delay for most actions (e.g. it might still be interesting to allow the core team to retain the right to pause/unpause the protocol in the early stages)
+1. **Deploy governance contract with the core team multisig as `owner`**
+2. **Make core team multisig subject to a time delay for parameter updates but have it retain the ability to pause/unpause and do contract upgrades**
+
 3. Grant access to a binding voting system to alter less sensitive protocol parameters
 4. Hand over control of all protocol parameters to binding voting systems
 5. Allow binding voting systems to execute code updates
-6. Deploy a binding voting system to govern the governance contract's ACL
-7. Remove core team multisig as `owner` and have ACL rules be established by a binding voting system
+7. Remove core team multisig as `owner` and establish a binding voting system or ACL contract as new `owner`.
 
-**In scope** For this proposal would be **step 1** and **step 2**
+**In scope** for this proposal would be **step 1** and **step 2**
 
 Step 1 would be completed upon deployment of the Extensible Governance System. Step 2 will be decided by the outcome of the initial values discussion [here](https://github.com/livepeer/LIPs/issues/30). 
 
-
-## Specification Rationale
-
-A modular ACL list that is actor agnostic allows for maximum extensibility to the governance structure and abstracts any details of how a binding voting systems should look like. It merely sets the foundation through which different actors can execute updates to protocol code or parameters. 
-
-It further enables different types of actors or different types of voting systems to have control over different parts of the protocol. Different parameters might require different systems, e.g. higher `QUORUM` and `THRESHOLD` values or  different voting schemes than tokenholder voting.
-
-Facilitating executing batches of staged updates simplifies the upgrade path for both EOA and contract actors and provides full transparency to all stakeholders as to all staged updates, their actors and time delay. 
-
-A modular ACL and time delay allows for interesting mechanics and a clear governance upgrade path to hand control over to binding voting systems. The core team can initially retain `owner` access over the protocol contracts but updates subject to the LIP process can already be subject to a time delay as well. In future milestones control over certain parameters or code updates can be phased over to the community through a binding voting system. 
 
 ## Initial Parameter Values
 
 There's mainly two initial values that need to be set 
 
 - The initial `OWNER` 
-- The `DELAY` for the first actor, if applicable 
+- The `DELAY` for `OWNER` for `FUNCTION` at `TARGET`
 
-It's established already that the first actor of this governance system will be the Livepeer Inc Multisig. Additional actors can be added over time through the Livepeer Governance process. 
+It's established already that intial `owner` this governance system will be the Livepeer Inc Multisig.
 
 `OWNER=0x04746b890d090ae3c4c5df0101cfd089a4faca6c`
 
-The `DELAY` parameter, when opting for a modular or role-based system can differ based on the action being taken. 
-To separate design and initial value discussions a proposal for the initial values can be found [here](https://github.com/livepeer/LIPs/issues/30)
 
-## Additional Context
+As aforementioned it seems reasonable for the initial phase to only impose time delays for parameter updates for the Livepeer Inc Multisig. This time delay would have to be greater than the current unbonding period (5760 blocks * 7 = 40320 blocks). 
 
-- Initial `DELAY` parameter discussion thread: https://github.com/livepeer/LIPs/issues/30
+The initial proposal is to 1.5x this value for parameter updates. This gives stakeholders plenty of time to exit the protocol in case they don't agree with a parameter update during the initial phase. The value can be later adjusted through the governance system if deemed necessary. 
+
+`DELAY = 5760 blocks x 7 x 150% = 60480 blocks`
+
+__At recent 12 second blocktimes this results in about a 5,5 day unbonding period and 8,5 day parameter update delay__
 
 ## Copyright
 
