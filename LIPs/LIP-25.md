@@ -34,11 +34,51 @@ The extensible governance system will be a Smart Contract deployed on the Ethere
 - Staged Execution
 - Batched Execution
 
+
+### Types
+
+```solidity
+struct update {
+    address target;
+    uint256 value;
+    bytes data;
+    uint256 nonce;
+}
+```
+
+### API
+
+#### `owner() returns (address)`
+
+Returns the address of the current owner of the Governance contract.
+
+#### `transferOwnership(address newOwner)` 
+
+Transfers the ownership of the Governance contract to a different address, can only be called by the current `owner`.
+
+#### `nonce() returns (uint256)`
+
+Returns the nonce of the latest staged update. 
+
+#### `stage(update[] _updates, bytes[] _sig, uint256 _delay)`
+
+Stage an update for execution, can consist of multiple separate updates to be executed atomically as a batch. The array of signatures should be respective to update which it matches. The updates have to be signed by the contract owner. 
+
+#### `execute(update[] _updates)`
+
+Execute updates that were previously  staged for execution, reverts if the delay has not expired. 
+
+### Events
+
+- `UpdateStaged(update[] updates, uint256 delay)`
+- `UpdateExecuted(update[] updates)`
+- `OwnershipTransferred(address indexed previousOwner, address indexed newOwner)`
+
 ### Access Control
 
 The new Governance contract, further referred to as `Governor` will take over ownership of the currently deployed `Controller` contract. The `Controller` in it's turn has ownership and a registry of the deployed components in the Livepeer Protocol (e.g. `BondingManager`, `Minter`) so it acts as a proxy through which the `Governor` can execute contract upgrades or parameter updates. 
 
-Initially ownership of the `Governor` will reside with the Livepeer Inc. Multisig e.g. using the [basic 'Ownable' contract by Open Zeppelin](https://docs.openzeppelin.com/contracts/3.x/access-control#ownership-and-ownable).
+Initially ownership of the `Governor` will reside with the Livepeer Inc. Multisig e.g. using the basic ['Ownable' contract](https://docs.openzeppelin.com/contracts/3.x/access-control#ownership-and-ownable) by OpenZeppelin.
 
 Future iterations could include more complex access control mechanisms such as Role-Based Access Control if the requirements should dictate it. In the end it's a matter of who has ownership over the `Governor`. This can be an EOA, Multisig, Binding Voting Contract or some sort of Access Control List Contract. 
 
@@ -56,111 +96,22 @@ Should provide a clear upgrade path for eventually handing control over to the s
 
 One potential rule for the governance contract to establish is a **time delay for executing governance actions** to give all stakeholders a clear view on pending updates and to allow those who disagree with the update to exit the protocol prior to execution of the update.  Updates can be stored as state on-chain before execution providing transparency for stakeholders. Governance actions can be parameter updates, code changes, updating access rights or updating time delay. 
 
-Time delay can be defined by a parameter, `DELAY`: Number of blocks by which to delay execution of a staged update.
+We can however distinguish separate reasons to upgrade and they would have different delay requirements:
+- critical bug fixes
+- pausing the protocol when an exploit is discovered that puts user funds at risks
+- parameter updates
+- code upgrades
 
-`DELAY` can be either a global or modular parameter, some benefits for a modular parameter, e.g. per actor basis/per function basis, include:
-- facilitate longer delays for 'sensitive' updates
-- allow quicker updates by the core team in the initial stage
-- enable more dynamic protocol pausing/unpausing mechanics (e.g. core team can still initially pause on a very small delay but community can submit a proposal to unpause again on a longer delay)
+The first two actions would be considered critical responses to incidents that could potentially occur. Even though the  probability of serious incidents would be considered low following the Streamflow security audit, it would  still be preferable for responses to incidents to take place on _no_ delay in this iteration of the Governance system. Neither are these  actions subject to the LIP process, which provides an additional reason. 
 
-The exact implementation is still open for discussion but the following code snippet should give a rough outline of what the logic could look like. 
+The delay would be by social convention as long as there is no binding voting system and only Livepeer inc. would be able to stage updates. This should allow for sufficient flexibility to do bug fixes and pausing the  protocol while providing ample possibility for transparancy and community scrutiny when the social convention is not respected by Livepeer inc. 
 
-- Updates (or it's `KECCAK256` hash) can be stored on-chain 
-- Updates will include a block height after which they can be executed
-- `setDelay()` can be used to assign a `DELAY` to a particular governance action (external funtion) and is also a governance action in itself.
-
-
-```solidity
-contract Staging {
-    
-    struct Update {
-        address target;
-        bytes data;
-    }
-    
-    struct StagedUpdate {
-        Update[] updates;
-        uint256 timelock;
-    }
-
-    /// @dev UpdateStaged is emitted when an actor stages an update
-    event UpdateStaged(address indexed actor, uint256 id, StagedUpdate stagedUpdate);
-    
-    /// @dev delays per actor
-    mapping(address => mapping(bytes 4 => uint256)) delays;
-    /// @dev staged updates
-    mapping(uint256 => StagedUpdate) public stagedUpdates;
-    /// @dev current update count
-    uint256 public updateCount;
-    
-    /**
-    * @dev stage an update for future execution.
-    * @param _updates a list of updates to be executed.
-    * @notice The entity staging the update must be allowed.
-    */
-    function stageUpdate(Update[] memory _updates) public {
-        StagedUpdate storage stagedUpdate = stagedUpdates[updateCount];
-        for (uint256 i = 0; i < _updates.length; i++) {
-            require(accessRights(msg.sender, _updates[i].target, getMethodSignature(_updates[i].data)), "access denied");
-            stagedUpdate.timelock = block.number + delays[msg.sender];
-            stagedUpdate.updates.push(Update({target: _updates[i].target, data: _updates[i].data}));
-        }
-        emit UpdateStaged(msg.sender, updateCount, stagedUpdate);
-        updateCount++;
-    }
-    
-    /**
-     * @dev set a update execution time delay for an actor
-     * @param _actor ethereum address of the actor to set a delay for
-     * @param _delay number of blocks to delay updates for
-     * @notice will revert if 'msg.sender' is not authorized to call this method
-     */
-    function setDelay(address _target, uint256 _delay) public {
-        require(accessRights(msg.sender, address(this), getMethodSignature(msg.data)), "access denied");
-        if (_delay == 0) {
-            delete delays[_actor];
-        } else {
-            delays[_actor] = _delay;
-        }
-    }
-}
-```
 ### Batched Execution
 
 Batched execution allows multiple code/parameter updates to be bundled into a single on-chain action. This can reduce the complexity and number of steps required for a protocol upgrade that consists of multiple proposals/changes.
 
 Since each parameter change is essentially a contract method call, the raw transaction data can be calculated before actually submitting the transaction to the target contract. Updates can then be executed as a batch as long as the combined set of method calls does not exceed the Ethereum block gas limit. 
 
-The following code snippet should give a rough idea of the necessary logic but should not be considered final code as it's not secure or optimised.
-
-```solidity
-contract Execution is Staging {
-    
-    /// @dev UpdateExecuted is emitted when a staged update has been fully executed
-    event UpdateExecuted(address indexed actor, StagedUpdate update);
-    
-    /**
-    * @dev Execute a staged update.
-    * @notice Updates are authorized during staging.
-    * @notice Reverts if a transaction can not be executed.
-    * @param  _id id of the staged update.
-    */
-    function executeUpdate(uint256 _id) public {
-       StagedUpdate storage stagedUpdate = stagedUpdates[_id];
-       require(block.number > stagedUpdate.timelock, "time delay for update not expired");
-        for (uint256 i = 0; i < stagedUpdate.updates.length; i++) {
-            (bool success,) = stagedUpdate.updates[i].target.call(stagedUpdate.updates[i].data);
-            require(success, "could not execute update");
-        }
-        emit UpdateExecuted(msg.sender, stagedUpdate);
-        delete stagedUpdates[_id];
-    }
-}
-```
-
-### EthFiddle
-
-The prototype contracts are available at https://ethfiddle.com/2iCPShA1pv
 
 ### Upgrade Path
 
@@ -181,19 +132,13 @@ Step 1 would be completed upon deployment of the Extensible Governance System. S
 
 ## Initial Parameter Values
 
-There's mainly two initial values that need to be set 
-
-- The initial `OWNER` 
-- The `DELAY` for `OWNER` for `FUNCTION` at `TARGET`
-
 It's established already that intial `owner` this governance system will be the Livepeer Inc Multisig.
 
 `OWNER=0x04746b890d090ae3c4c5df0101cfd089a4faca6c`
 
+As aforementioned delay will initially be enforced through social convention but expectations for social rules should still be set.
 
-As aforementioned it seems reasonable for the initial phase to only impose time delays for parameter updates for the Livepeer Inc Multisig. This time delay would have to be greater than the current unbonding period (5760 blocks * 7 = 40320 blocks). 
-
-The initial proposal is to 1.5x this value for parameter updates. This gives stakeholders plenty of time to exit the protocol in case they don't agree with a parameter update during the initial phase. The value can be later adjusted through the governance system if deemed necessary. 
+The proposal is that the Livepeer Inc uses a delay of 1.5x the current unbonding period when staging contract upgrades or parameter updates. This value should be used as the `_delay` argument when calling `stage()`. 
 
 `DELAY = 5760 blocks x 7 x 150% = 60480 blocks`
 
