@@ -144,6 +144,10 @@ The proposal is that the Livepeer Inc uses a delay of 1.5x the current unbonding
 
 __At recent 12 second blocktimes this results in about a 5,5 day unbonding period and 8,5 day parameter update delay__
 
+## Implementation 
+
+The latest implementation can be found [here](https://github.com/livepeer/protocol/blob/nv/governance-contract/contracts/governance/Governor.sol).
+
 ## Copyright
 
 Copyright and related rights waived via [CC0](https://creativecommons.org/publicdomain/zero/1.0/).
