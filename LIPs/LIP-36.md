@@ -1,5 +1,5 @@
 ---
-lip: <to be assigned>
+lip: 36
 title: Cumulative Earnings Claiming
 author: Yondon Fu (@yondonfu)
 type: Standard Track
