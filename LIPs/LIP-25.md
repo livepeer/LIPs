@@ -38,12 +38,26 @@ The extensible governance system will be a Smart Contract deployed on the Ethere
 ### Types
 
 ```solidity
-struct update {
-    address target;
-    uint256 value;
-    bytes data;
+struct Update {
+    address[] target;
+    uint256[] value;
+    bytes[] data;
     uint256 nonce;
 }
+```
+
+### Global State
+
+```solidity
+    /// @dev authorized address to stage updates
+    address public owner;
+
+    /// @dev incremented with each succesful staged update
+    uint256 public nonce;
+
+    /// @dev mapping of updateHash (keccak256(update) => executeBlock (block.number + delay)
+    mapping(bytes32 => uint256) updates; 
+
 ```
 
 ### API
@@ -54,24 +68,30 @@ Returns the address of the current owner of the Governance contract.
 
 #### `transferOwnership(address newOwner)` 
 
-Transfers the ownership of the Governance contract to a different address, can only be called by the current `owner`.
+Transfers the ownership of the Governance contract to a different address. While this function is available on the public API it can only be called by the contract `owner` through the `stage()` & `execute()` mechanism. 
 
 #### `nonce() returns (uint256)`
 
 Returns the nonce of the latest staged update. 
 
-#### `stage(update[] _updates, bytes[] _sig, uint256 _delay)`
+#### `stage(Update memory _update, uint256 _delay)`
 
-Stage an update for execution, can consist of multiple separate updates to be executed atomically as a batch. The array of signatures should be respective to update which it matches. The updates have to be signed by the contract owner. 
+Stage an update for execution, can consist of multiple separate updates to be executed atomically as a batch. The updates have to be staged by the contract `owner`. 
 
-#### `execute(update[] _updates)`
+Staged updates are not stored on-chain. Instead the hash of the update, `bytes32 updateHash = keccak256(abi.encode(_update))`, is mapped to the execution block `uint256 executionBlock = block.number + _delay`.
 
-Execute updates that were previously  staged for execution, reverts if the delay has not expired. 
+#### `execute(Update memory _update)`
+
+Execute updates that were previously staged for execution. Execute will revert if the update has not been staged prior or the delay hasn't expired. 
+
+This function cross-checks `keccak256(abi.encode(_update))` against the `updates` mapping. If the map-entry does not exist it means the update has not been staged for execution. 
+
+Upon succesful execution of an `_update`, it's hash will be removed from the `updates` map to prevent replay. 
 
 ### Events
 
-- `UpdateStaged(update[] updates, uint256 delay)`
-- `UpdateExecuted(update[] updates)`
+- `UpdateStaged(Update update, uint256 delay)`
+- `UpdateExecuted(Update update)`
 - `OwnershipTransferred(address indexed previousOwner, address indexed newOwner)`
 
 ### Access Control
