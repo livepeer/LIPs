@@ -1,6 +1,6 @@
 ---
-lip: 34
-title: InflationChange Parameter Update
+lip: 35
+title: Inflation Calculation Update
 author: Viktor Bunin, @viktorbunin, <viktor@bisontrails.co> 
 type: Parameter
 status: Draft
@@ -10,11 +10,11 @@ discussions-to: <https://github.com/livepeer/LIPs/issues/34>
 
 ## Abstract
 
-This proposal describes a change to the `inflationChange` parameter of the Livepeer protocol.
+This proposal describes a change to how inflation is calculated on the Livepeer protocol by updating calculations for the `inflationChange` parameter.
 
 ## Motivation
 
-This is a parameter change, which necessitates a LIP, as the protocol currently has an alternate parameter value.
+This LIP will enable the Livepeer community to more easily change the `inflationChange` parameter and make future changes to the rate of inflation and how quickly the rate of inflation changes.
 
 ## Specification
 
@@ -92,4 +92,3 @@ Completed with help from Yondon. Please see [here](https://github.com/livepeer/L
 ## Copyright
 
 Copyright and related rights waived via [CC0](https://creativecommons.org/publicdomain/zero/1.0/).
-
