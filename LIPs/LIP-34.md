@@ -88,7 +88,7 @@ There are no consensus changes.
 
 ## Implementation
 
-This LIP is bundled with [LIP-40](https://github.com/livepeer/LIPs/issues/40), which contains the technical implementation required to enable this parameter change.
+This LIP is bundled with [LIP-40](https://github.com/livepeer/LIPs/blob/master/LIPs/LIP-40.md), which contains the technical implementation required to enable this parameter change.
 
 ## Copyright
 
