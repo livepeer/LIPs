@@ -3,7 +3,7 @@ lip: 40
 title: Minter Math Precision
 author: Yondon Fu (@yondonfu), Viktor Bunin (@viktorbunin)
 type: Standard Track
-status: Draft
+status: Last Call
 created: 2020-07-21
 discussions-to: https://github.com/livepeer/LIPs/issues/40
 ---
