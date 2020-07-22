@@ -6,6 +6,7 @@ type: Standard Track
 status: Last Call
 created: 2020-07-21
 discussions-to: <https://github.com/livepeer/LIPs/issues/34>, <https://github.com/livepeer/LIPs/issues/40>
+requires: 34, 40
 ---
 
 ## Abstract
@@ -16,12 +17,13 @@ This proposal describes a bundle of LIPs that increases the number of decimal pl
 
 LIPs included in the bundle are:
 
-LIP-34: inflationChange Parameter Update
-LIP-40: Minter Math Precision
+[LIP-34](./LIP-34.md): inflationChange Parameter Update
+[LIP-40](./LIP-40.md): Minter Math Precision
 
 ## Specification Rationale
 
 LIP-34 and LIP-40 are bundled because 
+
 - LIP-34 is impossible to implement without LIP-40
 - The added optionality provided through LIP-40 of having greater decimal places of precision in the Minter contract does not provide sufficient benefit on its own to warrant a community vote at this time
 
