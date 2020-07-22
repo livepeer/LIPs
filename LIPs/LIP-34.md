@@ -84,7 +84,7 @@ This parameter change is fully backwards compatible.
 
 ## Test Cases
 
-There are no consensus changes.
+There are no consensus changes. Test cases covered by [LIP-40](https://github.com/livepeer/LIPs/blob/master/LIPs/LIP-40.md)
 
 ## Implementation
 
