@@ -88,7 +88,7 @@ There are no consensus changes.
 
 ## Implementation
 
-Completed with help from Yondon. Please see [here](https://github.com/livepeer/LIPs/issues/34#issuecomment-659575558) for details.
+This LIP is bundled with [LIP-40](https://github.com/livepeer/LIPs/issues/40), which contains the technical implementation required to enable this parameter change.
 
 ## Copyright
 
