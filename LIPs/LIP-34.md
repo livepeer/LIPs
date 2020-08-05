@@ -6,6 +6,7 @@ type: Parameter
 status: Last Call
 created: 2020-07-21
 discussions-to: <https://github.com/livepeer/LIPs/issues/34>
+requires: 34
 part-of: 35
 ---
 
