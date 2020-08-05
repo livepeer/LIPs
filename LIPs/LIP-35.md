@@ -17,8 +17,8 @@ This proposal describes a bundle of LIPs that increases the number of decimal pl
 
 LIPs included in the bundle are:
 
-[LIP-34](./LIP-34.md): inflationChange Parameter Update
-[LIP-40](./LIP-40.md): Minter Math Precision
+- [LIP-34](./LIP-34.md): inflationChange Parameter Update
+- [LIP-40](./LIP-40.md): Minter Math Precision
 
 ## Specification Rationale
 
