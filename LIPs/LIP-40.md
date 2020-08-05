@@ -6,6 +6,7 @@ type: Standard Track
 status: Last Call
 created: 2020-07-21
 discussions-to: https://github.com/livepeer/LIPs/issues/40
+requires: 34
 part-of: 35
 ---
 
@@ -57,9 +58,13 @@ Given a new inflation change value of .00005% (enabled by the proposed changes),
 While the implementation would be fairly simple, the deployment steps required would be a bit more involved:
 
 1. Deploy the new `Minter`
+    - All percentage value need to be represented in terms of the `PERC_DIVISOR = 1000000000` value used in the new `Minter`
     - The `inflation` parameter value should represent the inflation rate in the round that the deployment takes place
+        - The value can be calculated as `(float(oldMinter.inflation) / 1000000.0) * 1000000000`
     - The `targetBondingRate` parameter value should represent 50% (the current value)
-    - The `inflationChange` parameter value should represent the inflation change value in the round that the deployment takes place
+        - The value can be calculated as `.5 * 1000000000 = 500000000`
+    - The `inflationChange` parameter value should represent .00005% as described in [LIP-34](./LIP-34.md)
+        - The value can be calculated as `.0000005 * 1000000000 = 500`
 2. Call `pause()` on the `Controller`
 3. Call `migrateToNewMinter()` on the old `Minter` in order to transfer all LPT and ETH held by the old `Minter` to the new `Minter`. This will also transfer the rights to mint new LPT to the new `Minter`
 4. Register the new `Minter` by calling `setContractInfo()` on the `Controller`
@@ -83,11 +88,11 @@ These changes would be backwards compatible. Only the precision of the percentag
 
 ## Test Cases
 
-TBD
+See [PR](https://github.com/livepeer/protocol/pull/391).
 
 ## Implementation
 
-[WIP](https://github.com/yondonfu/protocol/tree/inflation-change-precision).
+[PR](https://github.com/livepeer/protocol/pull/391).
 
 ## Copyright
 
