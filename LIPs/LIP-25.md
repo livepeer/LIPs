@@ -88,10 +88,16 @@ This function cross-checks `keccak256(abi.encode(_update))` against the `updates
 
 Upon succesful execution of an `_update`, it's hash will be removed from the `updates` map to prevent replay. 
 
+### `cancel(Update memory _update)`
+
+Cancel allows for a previously staged update that has not yet been executed to be cancelled. Cancelling an update prevents its execution. 
+
+
 ### Events
 
 - `UpdateStaged(Update update, uint256 delay)`
 - `UpdateExecuted(Update update)`
+- `UpdateCancelled(Update update)`
 - `OwnershipTransferred(address indexed previousOwner, address indexed newOwner)`
 
 ### Access Control
@@ -158,7 +164,7 @@ It's established already that intial `owner` this governance system will be the 
 
 As aforementioned delay will initially be enforced through social convention but expectations for social rules should still be set.
 
-The proposal is that the Livepeer Inc uses a delay of 1.5x the current unbonding period when staging contract upgrades or parameter updates. This value should be used as the `_delay` argument when calling `stage()`. 
+The proposal is that the Livepeer Inc multisig uses a delay of 1.5x the current unbonding period when staging contract upgrades or parameter updates. This value should be used as the `_delay` argument when calling `stage()`. 
 
 `DELAY = 5760 blocks x 7 x 150% = 60480 blocks`
 
