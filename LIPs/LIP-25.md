@@ -42,7 +42,6 @@ struct Update {
     address[] target;
     uint256[] value;
     bytes[] data;
-    uint256 nonce;
 }
 ```
 
@@ -52,12 +51,27 @@ struct Update {
     /// @dev authorized address to stage updates
     address public owner;
 
-    /// @dev incremented with each succesful staged update
-    uint256 public nonce;
-
     /// @dev mapping of updateHash (keccak256(update) => executeBlock (block.number + delay)
     mapping(bytes32 => uint256) updates; 
 
+```
+
+### Access Modifiers
+
+#### onlyThis
+
+Functions with the `onlyThis` modifier can only be called by the `Governor` contract itself. 
+
+```
+require(msg.sender == address(this), "unauthorized: msg.sender not Governor")
+```
+
+#### onlyOwner
+
+Functions with the `onlyOwner` modifier require `msg.sender` to be equal to `owner`. 
+
+```
+require(msg.sender == owner, "unauthorized: msg.sender not owner");
 ```
 
 ### API
@@ -66,15 +80,11 @@ struct Update {
 
 Returns the address of the current owner of the Governance contract.
 
-#### `transferOwnership(address newOwner)` 
+#### `transferOwnership(address newOwner) onlyThis` 
 
 Transfers the ownership of the Governance contract to a different address. While this function is available on the public API it can only be called by the contract `owner` through the `stage()` & `execute()` mechanism. 
 
-#### `nonce() returns (uint256)`
-
-Returns the nonce of the latest staged update. 
-
-#### `stage(Update memory _update, uint256 _delay)`
+#### `stage(Update memory _update, uint256 _delay) onlyOwner`
 
 Stage an update for execution, can consist of multiple separate updates to be executed atomically as a batch. The updates have to be staged by the contract `owner`. 
 
@@ -88,9 +98,9 @@ This function cross-checks `keccak256(abi.encode(_update))` against the `updates
 
 Upon succesful execution of an `_update`, it's hash will be removed from the `updates` map to prevent replay. 
 
-### `cancel(Update memory _update)`
+#### `cancel(Update memory _update) onlyOwner`
 
-Cancel allows for a previously staged update that has not yet been executed to be cancelled. Cancelling an update prevents its execution. 
+Cancel allows for a previously staged update that has not yet been executed to be cancelled. Cancelling an update prevents its execution. Updates can only be cancelled by `owner`
 
 
 ### Events
@@ -104,13 +114,13 @@ Cancel allows for a previously staged update that has not yet been executed to b
 
 The new Governance contract, further referred to as `Governor` will take over ownership of the currently deployed `Controller` contract. The `Controller` in it's turn has ownership and a registry of the deployed components in the Livepeer Protocol (e.g. `BondingManager`, `Minter`) so it acts as a proxy through which the `Governor` can execute contract upgrades or parameter updates. 
 
-Initially ownership of the `Governor` will reside with the Livepeer Inc. Multisig e.g. using the basic ['Ownable' contract](https://docs.openzeppelin.com/contracts/3.x/access-control#ownership-and-ownable) by OpenZeppelin.
+Initially ownership of the `Governor` will reside with the Livepeer Inc. Multisig, its address will be set to `owner` during deployment. 
 
 Future iterations could include more complex access control mechanisms such as Role-Based Access Control if the requirements should dictate it. In the end it's a matter of who has ownership over the `Governor`. This can be an EOA, Multisig, Binding Voting Contract or some sort of Access Control List Contract. 
 
 The ability to either
 
--  Changing ownership of the `Governor`
+-  Changing ownership of the `Governor` (can only be executed through a staged update)
 
 -  Changing owership of the `Controller` to a new `Governor`
 
