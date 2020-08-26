@@ -110,7 +110,7 @@ Update the earnings claiming algorithm to:
 - Let `A` be the delegator's bonded amount after the above loop
 - Let `B` be the delegator's fees after the above loop
 - Set the delegator's bonded amount to `(A * endEarningsPool.cumulativeRewardFactor) / startEarningsPool.cumulativeRewardFactor`
-- Set the delegator's fees to `B + (A * endEarningsPool.cumulativeFeeFactor) / startEarningsPool.cumulativeRewardFactor`
+- Set the delegator's fees to `B + (A * (endEarningsPool.cumulativeFeeFactor - startEarningsPool.cumulativeFeeFactor) ) / startEarningsPool.cumulativeRewardFactor`
 - If the delegator is the orchestrator:
     - Add the orchestrator's `cumulativeRewards` to the delegator's bonded amount
     - Add the orchestrator's `cumulativeFees` to the delegator's fees
