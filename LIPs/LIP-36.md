@@ -31,9 +31,9 @@ Note: The mathematical explanation is included the Discourse forum post instead 
 
 ### Data Types
 
-#### LIP_UPGRADE_ROUNDS 
+#### LIPUpgradeRound
 
-This is an newly introduced mapping that maps an LIP number to a round at which it has been introduced. This is helpful in case an LIP has breaking changes such as this one. This notion of an upgrade round allows us to switch between the old algorithm and new algorithm.
+This is an newly introduced mapping on the `RoundsManager` contract. It maps an LIP number to a round number at which the LIP upgrade has been introduced. This is helpful in case an LIP has breaking changes such as this one. This notion of an upgrade round allows us to switch between the old claim earnings algorithm and the new claim earnings algorithm.
 
 #### Transcoder
 
@@ -41,9 +41,10 @@ The following fields are added to the `Transcoder` struct:
 
 | Field                       | Description                                                                                                                                |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| **activeCumulativeRewards** | The orchestrator's cumulative rewards that are active in the current round.                                                                |
-| **cumulativeRewards**       | The orchestrator's cumulative rewards (rewards earned via the orchestrator's active staked rewards and via the orchestrator's reward cut). |
-| **cumulativeFees**          | The orchestrator's cumulative fees (fees earned via the orchestrator's active staked rewards and via the orchestrator's fee share).        |
+| **lastFeeRound**            | The round in which the orchestrator last received fees.|
+| **activeCumulativeRewards** | The orchestrator's cumulative rewards that are active in the current round.|
+| **cumulativeRewards**       | The orchestrator's cumulative rewards (rewards earned via the orchestrator's active staked rewards and via the orchestrator's reward cut).|
+| **cumulativeFees**          | The orchestrator's cumulative fees (fees earned via the orchestrator's active staked rewards and via the orchestrator's fee share).|
 
 #### EarningsPool
 
@@ -65,8 +66,7 @@ The following fields are added to the `EarningsPool.Data` struct:
 Add the following steps to the algorithm described in the [spec](https://github.com/livepeer/wiki/blob/master/spec/streamflow/spec.md#rewards):
 
 - Set `activeCumulativeRewards = cumulativeRewards`
-- Let `earningsPool` be orchestrator's earnings pool for the current round and `prevEarningsPool` be orchestrator's earnings pool for the previous round. 
-    - If `prevEarningsPool.cumulativeRewardFactor == 0` set it to the `cumulativeRewardFactor` of the `earningsPool` for the orchestrator's `lastRewardRound`
+- Let `earningsPool` be orchestrator's earnings pool for the current round and `prevEarningsPool` be orchestrator's earnings pool for the orchestrator's last reward round (`transcoder.lastRewardRound`). 
 - Let `X` be the orchestrator's active stake for the current round
 - Let `delegatorsRewards` be the delegators' share of the rewards minted by the transcoder based on the transcoder's `rewardCut`
 - Let `transcoderCommissionRewards` be the transcoder's share of the rewards minted by the transcoder based on the transcoder's `rewardCut`
@@ -81,9 +81,11 @@ Add the following steps to the algorithm for `bondingManager.updateTranscoderWit
 
 - If the orchestrator has not called reward in the current round, set `activeCumulativeRewards = cumulativeRewards`
 - Let `X` be the orchestrator's active stake for the current round
-- Let `earningsPool` be orchestrator's earnings pool for the current round and `prevEarningsPool` be the orchestrator's earnings pool for the previous round. 
-    - If `prevEarningsPool.cumulativeRewardFactor == 0` set it to the `cumulativeRewardFactor` of the `earningsPool` for the orchestrator's `lastRewardRound`.
-    - If `prevEarningsPool.cumulativeFeeFactor == 0` set it to the `cumulativeFeeFactor` of the `earningsPool` for the orchestrator's `lastFeeRound`
+- Let `earningsPool` be orchestrator's earnings pool for the current round
+- Let `prevEarningsPool` be the orchestrator's earnings pool for the previous round. 
+    - If `prevEarningsPool.cumulativeRewardFactor == 0` and the orchestrator hasn't called reward for the current round, use the `cumulativeRewardFactor` of the `earningsPool` for the orchestrator's `lastRewardRound`.
+    - If If `prevEarningsPool.cumulativeRewardFactor == 0` and the orchestrator already called reward for the current round, retroactively calculate what the `cumulativeRewardFactor` for the previous would be according to the following formula: `cumulativeRewardFactor * (totalStake / delegatorRewards + totalStake)`
+    - If `prevEarningsPool.cumulativeFeeFactor == 0` use the `cumulativeFeeFactor` of the `earningsPool` for the orchestrator's `lastFeeRound`
 - Let `delegatorsFees` be the delegators' share of the fees generated by the transcoder based on the transcoder's `feeShare`
 - Let `transcoderCommissionFees` be the transcoder's share of the fees generated by the transcoder based on the transcoder's `feeShare`
 - Let `transcoderRewardStakeFees = (delegatorsFees * activeCumulativeRewards) / X`
@@ -110,7 +112,7 @@ Update the earnings claiming algorithm to:
 - Let `A` be the delegator's bonded amount after the above loop
 - Let `B` be the delegator's fees after the above loop
 - Set the delegator's bonded amount to `(A * endEarningsPool.cumulativeRewardFactor) / startEarningsPool.cumulativeRewardFactor`
-- Set the delegator's fees to `B + (A * endEarningsPool.cumulativeFeeFactor) / startEarningsPool.cumulativeRewardFactor`
+- Set the delegator's fees to `B + (A * (endEarningsPool.cumulativeFeeFactor - startEarningsPool.cumulativeFeeFactor) ) / startEarningsPool.cumulativeRewardFactor`
 - If the delegator is the orchestrator:
     - Add the orchestrator's `cumulativeRewards` to the delegator's bonded amount
     - Add the orchestrator's `cumulativeFees` to the delegator's fees
@@ -120,10 +122,9 @@ Update the earnings claiming algorithm to:
 
 Any read only functions used to calculate a delegator's stake and fees including unclaimed earnings (i.e. `BondingManager.pendingStake()` and `BondingManager.pendingFees()` will need to be updated to follow the above logic (without any storage updates such as zeroing out the orchestrator's cumulative values).
 
-#### setLIPUpgradeRound(uint256 _LIP, uint256 _round)
+#### setLIPUpgradeRound(uint256 _LIP, uint256 _round) onlyControllerOwner
 
-sets the key in the `LIP_UPGRADE_ROUNDS` mapping to `_LIP`.
-The `_round` argument is optional and will be set to  `currentRound+1` if `_round == 0`.
+Sets the key in the `LIPUpgradeRound` mapping for `_LIP` to `_round`. This call reverts if the caller is not the owner of the `Controller` contract.
 
 ## Specification Rationale
 
