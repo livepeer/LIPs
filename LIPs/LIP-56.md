@@ -1,5 +1,5 @@
 ---
-lip: <to be assigned> 
+lip: 56
 title: Reward Period
 author: Yondon Fu (@yondonfu)
 type: Standard Track
