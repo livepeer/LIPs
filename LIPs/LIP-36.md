@@ -3,7 +3,7 @@ lip: 36
 title: Cumulative Earnings Claiming
 author: Yondon Fu (@yondonfu), Nico Vergauwen (@kyriediculous)
 type: Standard Track
-status: Draft
+status: Last Call
 created: 2020-07-09
 discussions-to: https://github.com/livepeer/LIPs/issues/35
 ---
