@@ -6,7 +6,7 @@ type: Standard Track
 status: Draft
 created: 2020-09-02
 discussions-to: https://github.com/livepeer/LIPs/issues/52
-requires (*optional): 36
+requires: 36
 ---
 
 ## Abstract
