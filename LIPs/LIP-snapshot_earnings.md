@@ -4,7 +4,7 @@ title: Snapshot for claiming earnings
 author: Doug Petkanics (@dob) <doug@livepeer.org>, Nico Vergauwen (@kyriediculous) <nico@livepeer.org>
 type: Standard Track
 status: Draft
-created: 2020-02-09
+created: 2020-09-02
 discussions-to: https://github.com/livepeer/LIPs/issues/52
 requires (*optional): 36
 ---
@@ -19,7 +19,7 @@ Gas costs on the Ethereum network have skyrocketed, this has resulted in any bon
 
 Part of the reason this is the case is because Livepeer's accounting architecture requires users to pay the gas costs to incrementally calculate their earnings in every single round. As Livepeer has been live for over two years, some users have to calculate 600-700 rounds worth of earnings, leading multiple transactions having to be sumbitted with very high costs for each.
 
-While #35 proposes changes that can be applied going forward to reduce these costs, this proposal suggests a change that the community could approve, which would eliminate the majority of the costs to claim earnings going back in time. The proposal is for the community to review a snapshot of the rewards and fees for each account, along with an onchain update which would reference the snapshot in order to allow users to instantaneously claim past earnings without having to calculate the earnings from each round.
+While [LIP-36](./LIP-36.md) proposes changes that can be applied going forward to reduce these costs, this proposal suggests a change that the community could approve, which would eliminate the majority of the costs to claim earnings going back in time. The proposal is for the community to review a snapshot of the rewards and fees for each account, along with an onchain update which would reference the snapshot in order to allow users to instantaneously claim past earnings without having to calculate the earnings from each round.
 
 ## Specification
 
@@ -32,8 +32,8 @@ The snapshot will be referenced under the form of a Merkle tree where each botto
 2. Get all delegator addresses
 
 3. For each delegator call 
-    - `pendingStake(delegator, snapshotRound)`
-    - `pendingFees(delegator, snapShotRound)`
+    - `pendingStake(delegator, snapshotRound)` at the last block of snapshotRound
+    - `pendingFees(delegator, snapshotRound)` at the last block of snapshotRound
 
 4. Sort the tree by `delegator` address
 
@@ -41,7 +41,7 @@ A library such as [merkletreejs](https://github.com/miguelmota/merkletreejs) can
 
 ### Snapshot Round 
 
-#35 provides a clear transitional round after which claiming earnings are a constant operation (O(1)). 
+[LIP-36](./LIP-36.md) provides a clear transitional round after which claiming earnings are a constant operation (O(1)). 
 
 It would thus make sense to create the snapshot for the round prior to the upgrade round for #35. This will turn claiming earnings into a constant operation accross the board. 
 
@@ -69,8 +69,9 @@ Auto-generated `external` getter that gets the specific merkle tree root hash fo
 
 Sets the root hash of a merkle tree representing a snapshot and updates the `snapshots` map for `_ID` with `_merkleRoot`. 
 
-This function reverts if the map entry already exists. 
-
+This function reverts if:
+- The caller is not the `Controller` owner
+- The map entry already exists. 
 
 ##### `verify(bytes32 _ID, bytes32[] _proof, bytes32 _leaf) external returns (bool)`
 
@@ -83,7 +84,7 @@ MerkleProof.verify(_proof, rootHash, _leaf)
 
 #### `MerkleProof` Library
 
-`MerkleEarnings` will use `MerkleProof` contract from OpezenZepplin  to verify proofs: https://docs.openzeppelin.com/contracts/3.x/api/cryptography#MerkleProof
+`MerkleEarnings` will use `MerkleProof` contract from OpenZeppelin  to verify proofs: https://docs.openzeppelin.com/contracts/3.x/api/cryptography#MerkleProof
 
 This function exposes a single internal API 
 
@@ -93,15 +94,15 @@ verify(bytes32[] memory proof, bytes32 root, bytes32 leaf) internal pure returns
 
 ### `BondingManager` API changes
 
-#### `claimSnapShotEarnings(uint256 _rewards, uint256 _fees, bytes32[] memory _earningsProof)`
+#### `claimSnapshotEarnings(uint256 _rewards, uint256 _fees, bytes32[] memory _earningsProof)`
 
-* `_rewards` is the amount of rewards owed to `msg.sender` up until and including the round the snapshot was taken. 
+* `_pendingStake` is the stake of `msg.sender` at the snapshot including the amount of rewards owed to `msg.sender` up until and including the round the snapshot was taken. 
 
-* `_fees` is the amount of fees owed to `msg.sender` up until and including the round the snapshot was taken. 
+* `_pendingFees` is the amount of fees owed to `msg.sender` up until and including the round the snapshot was taken. 
 
-* `_earningsProof` is a sorted array of `KECCAK256` hashes of sibling leaves on the branch of the leaf for the delegator up to the root. This is required to reconstruct the root hash of the tree. Both the tree resembling the pre-image of the root hash as well as the proof array are assumed to be sorted in the same way. A leaf consists of `{delegator, rewards, fees}` 
+* `_earningsProof` is an array of `keccak256` sibling hashes on the branch of the leaf for the delegator up to the root. This is required to reconstruct the root hash of the tree. The leaves of the tree are sorted based on delegator address. A leaf consists of `{delegator, rewards, fees}` 
 
-1. Create the KECCAK256 hash using the leaf for the delegator's (`msg.sender`) rewards and fees as pre-image. 
+1. Create the `keccak256` hash using the leaf for the delegator's (`msg.sender`) rewards and fees as pre-image. 
 
 `bytes32 leaf = keccak256(abi.encodePacked(msg.sender, _rewards, _fees));`
 
@@ -109,7 +110,7 @@ verify(bytes32[] memory proof, bytes32 root, bytes32 leaf) internal pure returns
 2. Verify `_rewards` and `_fees` for `msg.sender` 
 
 ```
-require(MerkleSnapShot.verify(keccak256("LIP-52"), _earningsProof, leaf));
+require(MerkleSnapshot.verify(keccak256("LIP-52"), _earningsProof, leaf));
 ```
 
 3. If the proof is correct assign the rewards and fees to `msg.sender`
@@ -122,8 +123,8 @@ Take the `delegator` address as an argument instead of using `msg.sender` to gen
 ### Upgrade Path
 
 1. Deploy `MerkleSnapshot` contract
-2. Call `MerkleSnapshot.setSnapshot(keccak256("LIP-52"), earningsRoot)
-4. Deploy and Register new `BondingManager` implementation and have it contain the `MerkleSnapshot` interface. 
+2. Call `MerkleSnapshot.setSnapshot(keccak256("LIP-52"), earningsRoot)`
+4. Deploy and register new `BondingManager` implementation and have it contain the `MerkleSnapshot` interface. 
 
 ## Specification Rationale
 
