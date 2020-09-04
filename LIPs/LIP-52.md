@@ -1,5 +1,5 @@
 ---
-lip: <to be assigned>
+lip: 52
 title: Snapshot for claiming earnings
 author: Doug Petkanics (@dob) <doug@livepeer.org>, Nico Vergauwen (@kyriediculous) <nico@livepeer.org>
 type: Standard Track
