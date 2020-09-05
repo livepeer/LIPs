@@ -94,7 +94,7 @@ verify(bytes32[] memory proof, bytes32 root, bytes32 leaf) internal pure returns
 
 ### `BondingManager` API changes
 
-#### `claimSnapshotEarnings(uint256 _rewards, uint256 _fees, bytes32[] memory _earningsProof)`
+#### `claimSnapshotEarnings(uint256 _pendingStake, uint256 _pendingFees, bytes32[] memory _earningsProof)`
 
 * `_pendingStake` is the stake of `msg.sender` at the snapshot including the amount of rewards owed to `msg.sender` up until and including the round the snapshot was taken. 
 
@@ -140,7 +140,7 @@ TBD
 
 ## Implementation
 
-TBD
+https://github.com/livepeer/protocol/pull/397
 
 ## Copyright
 
