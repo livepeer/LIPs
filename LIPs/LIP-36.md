@@ -145,6 +145,18 @@ While not mentioned in the [spec](https://github.com/livepeer/wiki/blob/master/s
 
 Sets the key in the `lipUpgradeRound` mapping in `RoundsManager` for `_lip` to `_round`. This call reverts if the caller is not the owner of the `Controller` contract or if a mapping entry for `_lip` already exists.
 
+### Deployment
+
+`LIP_36_ROUND` = TBD
+
+1. Deploy a new `RoundsManager` target implementation
+2. Deploy a new `BondingManager` target implementation contract
+3. Register the new `RoundsManager` target implementation contract by calling `setContractInfo()` on the `Controller`
+4. Call `setLIPUpgradeRound(LIP_36_ROUND)` on the `RoundsManager` proxy contract
+5. Register the new `BondingManager` target implementation contract by calling `setContractInfo()` on the `Controller`
+
+Steps 3 & 4 must be executed before step 5 to ensure that the upgrade round is set in the `RoundsManager` before the `BondingManager` proxy starts using the updated implementation that depends on the upgrade round value.
+
 ## Specification Rationale
 
 Note that with this proposed earnings earnings algorithm delegators that submit a `BondingManager.bond()`, `BondingManager.unbond()`, `BondingManager.rebond()`, `BondingManager.rebondFromUnbonded()` or `BondingManager.withdrawFees()` transaction before their transcoder calls reward will not be eligible for the reward shares for the round. And if they submit any of the aforementioned transactions before their transcoder generates all possible fees for a round (for example, if an transcoder redeems another winning ticket for the round after the delegator submits one of these transactions) they will not be eligible for additional fee shares for the round. This is also the case for the current earnings claiming algorithm. However, with the current earnings claiming algorithm, these "lost" reward and fee shares are distributed amongst the remaining delegators for an transcoder that did not claim earnings through the round. In the proposed earnings claiming algorithm, these "lost" reward and fee shares are not distributed to anyone. Attempting to distribute these reward and fee shares to another entity increases complexity. Furthermore, the frequency of these lost reward and fee shares can be reduced by staking applications notifying delegators when they would lose reward and fee shares in this manner.
