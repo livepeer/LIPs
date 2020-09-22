@@ -147,7 +147,7 @@ Sets the key in the `lipUpgradeRound` mapping in `RoundsManager` for `_lip` to `
 
 ### Deployment
 
-`LIP_36_ROUND` = TBD
+`LIP_36_ROUND` will be the round in which the poll for this LIP ends if this LIP is accepted.
 
 1. Deploy a new `RoundsManager` target implementation
 2. Deploy a new `BondingManager` target implementation contract
@@ -167,11 +167,11 @@ The proposed earnings claiming algorithm maintains backwards compatability becau
 
 ## Test Cases
 
-[WIP](https://github.com/livepeer/protocol/tree/nv/cumulative-earnings/).
+[Test Cases](https://github.com/livepeer/protocol/tree/nv/cumulative-earnings/).
 
 ## Implementation
 
-[WIP](https://github.com/livepeer/protocol/tree/nv/cumulative-earnings/).
+[Code](https://github.com/livepeer/protocol/tree/nv/cumulative-earnings/).
 
 ## Copyright
 
