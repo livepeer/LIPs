@@ -43,7 +43,9 @@ A library such as [merkletreejs](https://github.com/miguelmota/merkletreejs) can
 
 [LIP-36](./LIP-36.md) provides a clear transitional round after which claiming earnings are a constant operation (O(1)). 
 
-It would thus make sense to create the snapshot for the round prior to the upgrade round for #35. This will turn claiming earnings into a constant operation accross the board. 
+It would thus make sense to create the snapshot for the round _prior to_ the upgrade round for [LIP-36](./LIP-36.md). This will turn claiming earnings into a constant operation accross the board. 
+
+```LIP-52_ROUND = LIP-36_ROUND - 1```
 
 ### `MerkleSnapshot` Contract
 
