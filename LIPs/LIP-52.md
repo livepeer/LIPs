@@ -138,11 +138,11 @@ In the current state this LIP does not introduce any backwards incompatibilities
 
 ## Test Cases
 
-TBD
+[Test Cases](https://github.com/livepeer/protocol/pull/397)
 
 ## Implementation
 
-https://github.com/livepeer/protocol/pull/397
+[Implementation](https://github.com/livepeer/protocol/pull/397)
 
 ## Copyright
 
