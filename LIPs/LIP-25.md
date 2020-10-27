@@ -42,6 +42,7 @@ struct Update {
     address[] target;
     uint256[] value;
     bytes[] data;
+    uint256 nonce;
 }
 ```
 
