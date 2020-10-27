@@ -10,7 +10,12 @@ discussions-to: https://github.com/livepeer/LIPs/issues/25
 
 ## Abstract
 
-This proposal describes an extensible governance system that can be used to update the parameters and code of the Livepeer protocol smart contracts and establish a basis for a clear upgrade path for the governance system to give stakeholders control over the system.
+This proposal is the next step towards **decentralising ownership over the Livepeer protocol** and fulfills the second milestone of the [Livepeer Governance Roadmap](https://medium.com/livepeer-blog/livepeer-governance-roadmap-proposal-69a6e9e33f80). It transfers ownership of the Livepeer protocol to a smart contract which in a later milestone can be owned by a binding voting system. It is a clear step forward in transferring control over the Livepeer protocol from the core team to all stakeholders (tokenholders, orchestrators, broadcasters, ... ).
+
+This LIP offers **complete transparency** around changes being made to the Livepeer protocol and the ability for the community or individual stakeholders to object to changes or exit the protocol if they don't agree with the changes being made or if changes are executed in bad faith. These new transparancy properties further **strengthens the social contract** that is implicitly established between the stakeholders and the core team executing the changes.
+
+The motivation behind this milestone is not to immediately implement a sophisticated binding voting system, but rather to establish the **technical foundation that allows for a variety of sophisticated binding voting systems to be implemented in the future**.
+
 
 ## Motivation
 
