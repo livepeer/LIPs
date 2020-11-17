@@ -3,7 +3,7 @@ lip: 25
 title: Extensible Governance Contract
 author: Nico Vergauwen (@kyriediculous) <nico@livepeer.org>
 type: Standard Track
-status: Last Call
+status: Proposed
 created: 2020-06-09
 discussions-to: https://github.com/livepeer/LIPs/issues/25
 ---
@@ -180,9 +180,9 @@ It's established already that intial `owner` this governance system will be the 
 
 As aforementioned delay will initially be enforced through social convention but expectations for social rules should still be set.
 
-The proposal is that the Livepeer Inc multisig uses a delay of 1.5x the current unbonding period when staging contract upgrades or parameter updates. This value should be used as the `_delay` argument when calling `stage()`. 
+The proposal is that the Livepeer Inc multisig uses a delay equal to the unbonding period plus two rounds when staging contract upgrades or parameter updates. This value should be used as the `_delay` argument when calling `stage()`. 
 
-`DELAY = 5760 blocks x 7 x 150% = 60480 blocks`
+`DELAY = 5760 blocks x 9 = 51840 blocks`
 
 __At recent 12 second blocktimes this results in about a 5,5 day unbonding period and 8,5 day parameter update delay__
 
