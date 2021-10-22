@@ -1,5 +1,5 @@
 ---
-lip: TBD
+lip: 74
 title: L1 Minting and L2 Staking
 author: Yondon Fu (@yondonfu)
 type: Standard Track
