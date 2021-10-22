@@ -1,5 +1,5 @@
 ---
-lip: TBD
+lip: 73
 title: L2 Stake Migration
 author: Yondon Fu (@yondonfu)
 type: Standard Track
