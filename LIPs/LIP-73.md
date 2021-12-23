@@ -1,6 +1,6 @@
 ---
 lip: 73
-title: L2 Stake Migration
+title: Confluence - Arbitrum One Migration
 author: Yondon Fu (@yondonfu)
 type: Standard Track
 status: Draft
@@ -10,192 +10,244 @@ discussions-to: https://forum.livepeer.org/t/lip-l2-stake-migration/1532
 
 ## Abstract
 
-This proposal outlines a mechanism for LPT stake to be migrated from the BondingManager contract deployed on L1 Ethereum to a BondingManager contract deployed on a L2 that derives its security from L1 Ethereum.
+This proposal outlines a design for migrating the Livepeer protocol from L1 Ethereum to [Arbitrum One](https://offchainlabs.com/), an L2 optimistic rollup that uses L1 Ethereum for data availability.
 
-The proposed mechanism allows a user (orchestrators and delegators) with stake delegated in the L1 BondingManager to submit a single transaction on L1 to atomically unstake LPT, bridge the LPT to the L2 via a pair of gateway contracts and stake the LPT in the L2 BondingManager. 
+The proposed design includes:
+
+- A bridge that allows LPT to be moved between L1 and L2
+- A user migration mechanism
+- The disabling of LPT burning on L2
+- The complete transition of protocol transaction activity (including inflation and fees) from L1 to L2
+- The complete transition of protocol governance voting from L1 to L2
 
 ## Motivation
 
-In order to stake LPT on L2, LPT needs to first be bridged to L2 where bridging refers to the process of escrowing the LPT on L1 and minting an equivalent amount of a representation of LPT on L2. A large percentage of LPT is currently staked in the L1 BondingManager and orchestrators and delegators would need to wait through a 7 round (~6-7 day) unbonding period in order to withdraw their stake. Then, after withdrawing their stake, they would need to bridge their LPT to L2 and then submit an additional transaction to stake the LPT in the L2 BondingManager. This multi-step process introduces a lot of friction and additional costs for users. A mechanism that allows stake to be migrated from the L1 BondingManager to a L2 BondingManager with a single transaction on L1 would significantly reduce friction and costs for users.
+A major problem facing the Livepeer network today is high gas fees on L1 Ethereum (henceforth referred to as "L1") which includes the following consequences:
+
+- Expensive for orchestrators to earn/distribute LPT rewards
+- Expensive for delegators to delegate stake to orchestrators
+- Increased funds that need to be locked up by broadcasters (the amount of funds that need to be locked rises with gas fees for the current probabilistic micropayment protocol implementation)
+
+A solution to this problem is to deploy the protocol contracts to a [rollup](https://ethereum.org/en/developers/docs/scaling/layer-2-rollups/) anchored to L1. The gas fees for using contracts on a rollup are lower than the gas fees of using the same contracts on L1. However, there are a few considerations that need to be addressed in order to pursue this solution:
+
+- A specific rollup needs to be chosen and there are many rollups to chose from
+- The L1 contracts already manage funds and state for many users so there needs to be a process by which funds and state can be migrated
+
+This proposal presents a design to address these points.
 
 ## Specification
 
-The L1 BondingManager should be upgraded with the following function:
+### Parameters
 
-```solidity=
-// L1
-interface IBondingManager {
-    function migrateStake(
-        address _delegator,
-        uint256 _amount
-    )
-        external
-}
+| Parameter                | Value |
+| ------------------------ | ----- |
+| `L2_GOVERNANCE_MULTISIG` | TBD   |
+| `LIP_73_ROUND`           | TBD   |
+
+`L2_GOVERNANCE_MULTISIG` is the address of the multisig that owns the L2 protocol contracts.
+
+`LIP_73_ROUND` is the round at which protocol transactions will be disabled on L1 and protocol transactions will be enabled on L2.
+
+All L2 protocol contract parameters outside of the L2 Minter inflation rate (see [this section](#disable-l1-protocol-transactions-and-enable-l2-protocol-transactions) for details on how this parameter will be set) will be set to the L1 protocol contract parameters.
+
+### Arbitrum One
+
+This proposal designates [Arbitrum One](https://offchainlabs.com/)) (henceforth referred to as "L2") as the rollup to deploy the protocol contracts to because of the following reasons:
+
+- EVM compatible meaning that the current protocol contracts on L1 can be deployed to L2 with little to no changes
+- Most usage and time in production relative to other EVM compatible rollups
+- Fraud proof system live in production
+- Permissionless contract deployments
+- Promising roadmap with improvements for further decreasing gas fees including the upcoming "Nitro" release
+
+With this being said, the blockchain scaling landscape will continue evolve so while Arbitrum One may be used in this proposal, the community can and should continue following the development of other rollups and additional scaling solutions in order to take advantage of them for the protocol in the future.
+
+### L1 <> L2 LPT Bridge
+
+The LPT bridge is a set of L1 and L2 contracts that integrate with [Arbitrum's cross-chain message passing system](https://developer.offchainlabs.com/docs/bridging_assets) that allow LPT to be moved between L1 and L2. A user will lock LPT on L1 in order to receive LPT on L2 and a user will burn LPT on L2 in order to unlock LPT on L2.
+
+This bridge will be deployed to:
+
+- Allow any user to move LPT from L1 to L2
+- Allow any user to move LPT from L2 to L1 after the L2 challenge period (to ensure that the withdrawal to L2 is valid)
+- Support the transfer of LPT and ETH held by the L1 Minter to L2
+
+These contracts will be upgradeable by the L1 Governor (for L1 contracts) and L2 Governor (for L2 contracts) allowing the community to:
+
+- Add new features to the bridge if needed
+- Secure the LPT on L1 in the event that there is a problem on L2. In this scenario, the community will be able to coordinate to re-distribute LPT on L1 if needed
+
+### L1 -> L2 Minter LPT and ETH Migration
+
+In order to support user migrations to L2, we will need to migrate the LPT and ETH held by the L1 Minter to the L2 Migrator (described in further detail the next section). The L2 Migrator will be responsible for using the migrated LPT and ETH to:
+
+- Stake LPT in the L2 BondingManager on behalf of users that migrate from L1
+- Distribute ETH to users that are owed fees that migrate from L1 
+
+In order to migrate the LPT and ETH held by the L1 Minter to the L2 Migrator, the L1 Minter will be upgraded to:
+
+- Support transferring its LPT to the L2 Migrator using the LPT bridge
+- Support transferring its ETH to the L2 Migrator using Arbitrum's cross-chain message passing system 
+
+Once the L1 Minter is upgraded, LPT and ETH will be migrated to the L2 Migrator before user migrations are supported.
+
+### L1 -> L2 User Migration
+
+All user migrations will be facilitated by a pair of migrator contracts, a L1 Migrator and a L2 Migrator, that integrate with Arbitrum's cross-chain message passing system.
+
+The L1 Migrator will be upgradeable by the L1 Governor and the L2 Migrator will be upgradeable by the L2 Governor.
+
+There will be two types of user migrations to L2 supported:
+
+1. Migrate from L1 via cross-chain transaction from L1
+2. Migrate from L1 via a L1 snapshot proof on L2
+
+The first type will be referred to as a "cross-chain migration". The second type will be referred to as a "snapshot migration".
+
+*Cross-Chain Migration*
+
+This migration type will be supported immediately and requires submitting a transaction on L1. The users that should use this migration option are:
+
+- Orchestrators
+- Delegators that delegate via contracts
+- Orchestrators or delegators with active unbonding locks
+- Broadcasters
+
+After completing this migration, an orchestrator will:
+
+- Have its stake from L1 in the L2 BondingManager
+- Have its delegated stake from L1 in the L2 BondingManager. The delegators that contributed to this stake on L1 will be able to claim their stake on L2 along with owed rewards and fees
+- Be credited with fees earned on L1
+
+After completing this migration, a delegator will be in the same situation as an orchestrator minus the point about delegated stake. And if the delegator's orchestrator previously already migrated, the delegator will be able to claim their stake, which was already migrated by the orchestrator, along with owed rewards and fees.
+
+After completing this migration, an orchestrator or delegator with active unbonding locks will:
+
+- Have the sum of stake for all active unbonding locks from L1 as stake in the L2 BondingManager
+
+After completing this migration, a broadcaster will:
+
+- Have its deposit from L1 in the L2 TicketBroker
+- Have its reserve from L1 in the L2 TicketBroker
+
+*Snapshot Migration*
+
+This migration type will be supported after a delay period which will be used by the community to review the correctness of a snapshot of L1 delegator data before the snapshot can be used on L2. The users that should use this migration option are delegators that delegate via EOAs (i.e. an externally owned account managed by a wallet). Delegators that delegate via contracts will not be eligible for this migration type. The reason for supporting this migration type is to help smaller delegators (i.e. those with small amounts of stake), avoid paying potentially large L1 transaction costs.
+
+The snapshot will be generated off-chain as a Merkle tree with the leaves storing delegator data after protocol transactions on L1 are disabled in order to freeze the state of the L1 contracts. The snapshot will include all non-contract delegator accounts. The snapshot will be posted publicly so that the community can review its correctness off-chain before it is used on L2.
+
+The leaf format of the Merkle tree will be as follows:
+
+```
+keccak256(abi.encodePacked(
+    delegator,
+    delegate,
+    stake,
+    fees
+))
 ```
 
-The `migrateStake()` function can only be called by a Migrator contract on L1 to instantly unstake (without an unbonding period) and withdraw a specified amount of the delegator's stake into the Migrator contract. If the specified delegator is an orchestrator (which is a self-delegated delegator), the orchestrator is deactivated & unregistered in the L1 BondingManager if the specified amount is equal to the delegator's entire stake. 
+- `delegate` is the delegator's current delegate on L1 at the time of snapshot generation
+- `stake` is the delegator's current stake on L1 at the time of snapshot generation which can be calculated using `BondingManager.pendingStake()`
+- `fees` is the delegator's current fees on L1 at the time of snapshot generation which can be calculated using `BondingManager.pendingFees()`
 
-```solidity=
-// L1
-contract BondingManager {
-    function migrateStake(
-        address _delegator,
-        uint256 _amount
-    )
-        external
-        autoClaimEarnings
-        onlyMigrator
-    {
-        // Subtract _amount from the relevant storage values
-        // ...
+Once the snapshot is available on L2, delegators included in the snapshot will be able to submit a transaction on L2 to claim their stake. After submitting this transaction, the delegator will:
 
-        // Move LPT to Migrator
-        minter().trustedWithdrawTokens(address(migrator()), _amount);
-    }
-}
-```
+- Have its stake from L1 in the L2 BondingManager
 
-`migrateStake()` should revert if the specified amount exceeds the delegator's current stake in the BondingManager.
+If the delegator's orchestrator previously already migrated, the delegator will be able to claim their stake, which was already migrated by the orchestrator, along with owed rewards and fees.
 
-`migrateStake()` function will not touch a delegator's ETH fees. The delegator will still be able to withdraw its ETH fees on L1 using the `withdrawFees()` function on the L1 BondingManager.
+### Disable L1 Protocol Transactions and Enable L2 Protocol Transactions
 
-The Migrator contract is responsible for escrowing LPT into a gateway contract that bridges L1 with the L2 and also submitting a message that can be executed on L2 to stake the LPT in the L2 BondingManager. 
+In order to support snapshot migrations, all protocol transcations on L1 will be completely disabled at the beginning of `LIP_73_ROUND` prior to generating the snapshot in order to freeze the state of the L1 contracts. Prior to the designated round, orchestrators will be able to call reward and redeem tickets on L1.
 
-```solidity=
-// L1
-contract Migrator {
-    struct MigrateMsg {
-        // Address of delegator to migrate stake
-        address srcDelegator;
-        // Address of delegator to receive migrated stake
-        address dstDelegator;
-        // Address to delegate migrated stake to
-        address dstDelegate;
+After protocol transactions on L1 are disabled, protocol transactions on L2 will be enabled meaning that inflationary rewards and fees will only be earned and distributed on L2. The inflation rate on the L2 Minter will be set to the last inflation rate in the L1 Minter prior to protocol transactions on L1 being disabled. As a result, the inflation schedule on L2 will pick up from where the inflation schedule on L1 left off.
 
-        // Hints for updating the position of dstDelegate in the pool
-        address dstDelegateNewPosPrev;
-        address dstDelegateNewPosNext;
+After protocol transactions on L2 are enabled and the L1 Minter LPT and ETH are migrated to the L2 Migrator, user migrations will be supported starting with cross-chain migrations followed by snapshot migrations after the community snapshot review delay period. When orchestrators migrate they will need wait until the next round in order to become active after which they will be able to call reward and redeem tickets on L2. 
 
-        // Amount of stake to migrate
-        uint256 amount;
+The community should also take note of the following:
 
-        // Deadline for signature to be used for migration
-        // Optional: Only required if sig is set
-        uint256 deadline; 
-        // Signature to authorize migration
-        // Optional: Only required if msg.sender != srcDelegator
-        bytes sig;
-    }
+- The active orchestrator set on L2 will start off empty until orchestrators migrate which means that in the first round after the upgrade rewards could be split amongst a smaller number of orchestrators depending on how many orchestrators migrate immediately after the upgrade
+- The participation rate on L2 will start off at 0 and will increase as users migrate
 
-    mapping (address => uint256) public nonces;
+### Disable L2 LPT Burning
 
-    function migrate(MigrateMsg memory _msg) external {
-        if (_msg.sig != bytes(0)) {
-            // Use nonce to generate MigrateMsg EIP-712 hash
-        
-            // Increment nonce so that it cannot be used again 
-            nonces[_srcDelegator] += 1;
-        
-            // Recover signer from signature
-        
-            require(
-                block.timestamp <= _msg.deadline,
-                "expired deadline"
-            );
-            require(
-                signer != _msg.srcDelegator,
-                "invalid signer"
-            );
-        } else {
-            require(
-                msg.sender != _msg.srcDelegator,
-                "invalid msg.sender"
-            );
-        }
-    
-        bondingManager.migrateStake(_srcDelegator, _msg.amount);
-    
-        token.approve(l1Gateway, _msg.amount);
-    
-        // Call gateway and pass the MigrateMsg
-    } 
-}
-```
+In order to avoid having to synchronize a reduction of the LPT supply on L2 with the LPT supply on L1, burning of LPT outside of the context of the bridge will be disabled on L2.
 
-Users will call the `migrate()` function on the Migrator in order to execute the migration to the L2.
+The L2 gateway of the LPT bridge is the only entity on L2 that is allowed to burn LPT during the withdrawal to L1 process because this is a special case process where burning LPT is required to unlock LPT on L1.
 
-The `srcDelegator` argument allows a third party to trigger a migration on behalf of a delegator, but only if the delegator authorizes the migration with an [EIP-712](https://eips.ethereum.org/EIPS/eip-712) signature specified in the `sig` field of `MigrateMsg`. As a self-delegated delegator, an orchestrator can use this feature to generate a signature using a CLI tool and provide the signature in a web UI. If the `sig` field is not set, then `srcDelegator` must be equal to `msg.sender` when calling `migrate()`.
+The only area of the protocol where LPT burning is required right now [1] is for the governance poll creation cost. The next section describes a change to the requirement for governance poll creation that removes the need to burn LPT.
 
-The `dstDelegator` argument offers the caller flexibility in specifying a different delegator address that the migrated stake should be owned by. `dstDelegator` may be different from the caller's current address on L1. The ability to specify a different delegator address will allow the caller to use a different address on L2 or even use a contract wallet on L2.
+[1] In the past, burning LPT was required for slashing. But, slashing is disabled right now. If slashing is re-enabled in the future, there can be different mechanisms for handling the slashed stake or burning can be re-considered if needed at that point in time.
 
-The `dstDelegate` argument offers the caller flexibility in specifying the orchestrator address that migrated stake should be delegated to on L2. `dstDelegate` may be different from the caller's current orchestrator on L1. The ability to specify a different orchestrator when migrating stake will also be important if the current orchestrator on L1 has not yet migrated its stake to L2. In this scenario, a delegator that wants to migrate to the L2 likely would want to delegate its stake to a different orchestrator that has already migrated to the L2.
+### L2 Governance
 
-The L2 BondingManager could support the following function:
+Any upgrades to L2 contracts will be authorized by the L2 Governor which will be owned by a governance multisig at `L2_GOVERNANCE_MULTISIG`. The L2 governance multisig will have the same set of signers as the L1 governance multisig, but updates to membership can be made in subsequent proposals. The L1 contracts will still be managed by the L1 Governor which is owned by the L1 governance multisig.
 
-```solidity=
-// L2
-interface IBondingManager {
-    function bondForWithHint(
-        uint256 _amount,
-        address _owner,
-        address _to,
-        address _oldDelegateNewPosPrev,
-        address _oldDelegateNewPosNext,
-        address _currDelegateNewPosPrev,
-        address _currDelegateNewPosNext
-    )
-        external;
-}
-```
+Both the L1 and L2 governance multisigs will be responsible for executing the results of governance polls conducted on L2. Going forward, governance polls creation and voting will occur on L2 with only the stake in the L2 BondingManager being considered for the stake weight of votes.
 
-In contrast with the L1 BondingManager, which only allows LPT to be staked and delegated by the `msg.sender` in the `bondWithHint()` function, the L2 BondingManager would allow LPT to be staked and delegated on behalf of a specified address that does not have to be `msg.sender`. This function allows the L2 Migrator to stake and delegate LPT in the L2 BondingManager on behalf of a user that is migrating to the L2.
+In order to accomodate the disabling of LPT burning on L2, the poll creation requirement on L2 will be updated to be based on a minimum amount of stake instead of a LPT burn. At the moment, the burn requirement on L1 is 100 LPT. On L2, this will be removed in favor of a 100 LPT minimum stake requirement.
 
-```solidity=
-// L2
-contract Migrator {
-    function finalizeMigrate(MigrateMsg memory _msg) external onlyGateway {
-        // Set delegate for _msg.dstDelegator to current delegate
-        if (delegate == address(0)) {
-            delegate = _msg.dstOrchestrator;
-        }
+### Upgrade Process
 
-        bondingManager.bondForWithHint(
-            _msg.amount,
-            _msg.dstDelegator,
-            delegate,
-            address(0),
-            address(0),
-            _msg.dstOrchestratorNewPosPrev,
-            _msg.dstOrchestratorNewPosNext
-        );
-    }
-}
-```
+The upgrade process will involve the following phases if the proposal is accepted:
 
-The L2 Migrator is just responsible for calling the `bondForWithHint()` function on the L2 BondingManager to stake LPT on behalf of the user that triggered a migration on L1.
+*Phase 1*
 
-### Implementation Details
+- The L1 RoundsManager will be upgraded to disable round initialization at `LIP_73_ROUND`
+- During this phase, protocol transactions will be executed normally
+- During this phase, the following contracts will be deployed:
+    - Protocol contracts on L2
+    - Migrator contracts on L1 and L2
+    - LPT bridge contracts on L1 and L2
+    - All of these contracts will start off paused
 
-TBD
+*Phase 2*
+
+- This phase begins at `LIP_73_ROUND`
+- Protocol transactions will be disabled on L1
+- The L1 Minter will be upgraded
+- The L1 Minter will transfer its LPT and ETH to the L2 Migrator
+- Cross-chain migrations will be supported
+- The snapshot of non-contract delegators will be created. The snapshot data will be posted publicly and the snapshot root will be included in a staged L2 Governor update [1] for community review kicking off a 7 day delay period
+- If at any point during the 7 day delay period the snapshot is discovered to be incorrect, the staged update in the L2 Governor will be cancelled, the snapshot will be re-generated and a new 7 day delay period will be kicked off
+
+[1] See [LIP-25](https://github.com/livepeer/LIPs/blob/master/LIPs/LIP-25.md) for details on staged Governor updates.
+
+*Phase 3*
+
+- This phase begins after the 7 day delay period for the community snapshot review
+- The snapshot will be available on L2
+- Snapshot migrations will be supported
 
 ## Specification Rationale
 
-The proposed specfication aims to:
+**Rationale for orchestrators migrating delegated stake**
 
-- Minimize the amount of code changes required in the L1 BondingManager to avoid the possibility of introducing bugs in changes to already complex code.
-- Isolate the stake migration and L2 logic in a pair of Migrator contracts (one on L1 and one on L2) to maintain a clean separation of concerns between the BondingManager contracts and stake migration logic
+If orchestrators did not migrate delegated stake then the orchestrator would lose its delegated stake on L1 when it migrates to L2 since the orchestrator’s delegators would have to migrate their own stake delegated to that orchestrator to L2. This disproportionally penalizes orchestrators with many delegators relative to orchestrators with few delegators. While delegators can certainly choose to move their stake away from an orchestrator on their own, we believe it is important for a protocol upgrade to not disproportionally penalize a certain group (i.e. orchestrators with many delegators) if the members of the group are operating honestly and according to the rules of the protocol. Additionally, delegators will still have the ability to opt-out of this process by unbonding and withdrawing before the upgrade is executed.
+
+**Rationale for supporting snapshot migrations**
+
+While the use of an off-chain snapshot is not trustless since the L2 contracts cannot validate the snapshot on their own, the motivations for including it in this design are:
+
+- L1 gas prices make it especially tough for smaller delegators to migrate on their own to access value that they are entitled to within the protocol. Based on some rough back of the napkin math, we estimate that there could be as many as 2000+ delegators for which the L1 transaction cost for migration would exceed the value of their stake and as many as 4000+ delegators for which the L1 transaction cost for withdrawing fees would exceed the value of their earned fees. We estimate that avoiding L1 transaction costs altogether for these delegators could “unlock” a cumulative total as much as 1000+ LPT and 2+ ETH that could otherwise be inaccessible to delegators from an economic point of view
+- There is precedent for using a snapshot to unlock value in the protocol with [LIP-52](https://github.com/livepeer/LIPs/blob/master/LIPs/LIP-52.md) given the ability for the community to properly evaluate the correctness of the snapshot off-chain before it is used on-chain
 
 ## Backwards Compatibility
 
-This proposal does not affect users ability to stake in the L1 BondingManager and only introduces a new feature that allows users to migrate their stake to a L2 BondingManager if they wish to do so. Users do not have to migrate their stake, but it may be in their best interest to do so in order to take advantage of lower transaction costs on L2.
+The changes in this proposal are backwards incompatible because protocol transactions will be disabled on L1 and only protocol transactions on L2 will be supported going forward.
 
 ## Test Cases
 
-TBD
+See the repos mentioned in the next section.
 
 ## Implementation
 
-TBD
+The in-progress implementation can be found in the following repos:
+
+- https://github.com/livepeer/protocol (`streamflow` branch) contains updated L1 protocol contracts
+- https://github.com/livepeer/protocol/tree/confluence (`confluence` branch) contains L2 protocol contracts
+- https://github.com/livepeer/arbitrum-lpt-bridge contains bridge and migrator contracts
 
 ## Copyright
 
