@@ -169,6 +169,7 @@ The community should also take note of the following:
 
 - The active orchestrator set on L2 will start off empty until orchestrators migrate which means that in the first round after the upgrade rewards could be split amongst a smaller number of orchestrators depending on how many orchestrators migrate immediately after the upgrade
 - The participation rate on L2 will start off at 0 and will increase as users migrate
+- The participation rate on L2 will be calculated as `total stake on L2 / (total supply on L2 + circulating supply on L1)` meaning it will take into account the total supply of LPT across both L1 *and* L2. The total supply on L2 will include any LPT from L1 that has been moved to L2, but it will not include the circulating (i.e. liquid) supply of LPT on L1 which could change if LPT is burned on L1 (since the L1 LPT contract allows users to burn their own LPT). In order for the L2 Minter to be aware of the circulating supply of LPT on L1, there will be a contract on L1 that pushes the latest circulating supply of LPT on L1 if it ever changes to L2 so that the L2 Minter can use that data when calculating the participation rate on L2 
 
 ### Disable L2 LPT Burning
 
