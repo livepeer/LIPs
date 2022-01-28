@@ -42,11 +42,11 @@ This proposal presents a design to address these points.
 | Parameter                | Value |
 | ------------------------ | ----- |
 | `L2_GOVERNANCE_MULTISIG` | TBD   |
-| `LIP_73_ROUND`           | TBD   |
+| `LIP_73_BLOCK_NUMBER`    | TBD   |
 
 `L2_GOVERNANCE_MULTISIG` is the address of the multisig that owns the L2 protocol contracts.
 
-`LIP_73_ROUND` is the round at which protocol transactions will be disabled on L1 and protocol transactions will be enabled on L2.
+`LIP_73_BLOCK_NUMBER` is the round at which protocol transactions will be disabled on L1 and protocol transactions will be enabled on L2.
 
 All L2 protocol contract parameters outside of the L2 Minter inflation rate (see [this section](#disable-l1-protocol-transactions-and-enable-l2-protocol-transactions) for details on how this parameter will be set) will be set to the L1 protocol contract parameters.
 
@@ -159,7 +159,7 @@ If the delegator's orchestrator previously already migrated, the delegator will 
 
 ### Disable L1 Protocol Transactions and Enable L2 Protocol Transactions
 
-In order to support snapshot migrations, all protocol transcations on L1 will be completely disabled at the beginning of `LIP_73_ROUND` prior to generating the snapshot in order to freeze the state of the L1 contracts. Prior to the designated round, orchestrators will be able to call reward and redeem tickets on L1.
+In order to support snapshot migrations, all protocol transactions on L1 will be completely disabled after `LIP_73_BLOCK_NUMBER` prior to generating the snapshot in order to freeze the state of the L1 contracts. Prior to the designated block number, orchestrators will be able to call reward and redeem tickets on L1.
 
 After protocol transactions on L1 are disabled, protocol transactions on L2 will be enabled meaning that inflationary rewards and fees will only be earned and distributed on L2. The inflation rate on the L2 Minter will be set to the last inflation rate in the L1 Minter prior to protocol transactions on L1 being disabled. As a result, the inflation schedule on L2 will pick up from where the inflation schedule on L1 left off.
 
@@ -195,7 +195,6 @@ The upgrade process will involve the following phases if the proposal is accepte
 
 *Phase 1*
 
-- The L1 RoundsManager will be upgraded to disable round initialization at `LIP_73_ROUND`
 - During this phase, protocol transactions will be executed normally
 - During this phase, the following contracts will be deployed:
     - Protocol contracts on L2
@@ -205,12 +204,12 @@ The upgrade process will involve the following phases if the proposal is accepte
 
 *Phase 2*
 
-- This phase begins at `LIP_73_ROUND`
-- Protocol transactions will be disabled on L1
+- This phase begins after `LIP_73_BLOCK_NUMBER`
+- The L1 Controller will be paused and protocol transactions will be disabled on L1
 - The L1 Minter will be upgraded
 - The L1 Minter will transfer its LPT and ETH to the L2 Migrator
 - Cross-chain migrations will be supported
-- The snapshot of non-contract delegators will be created. The snapshot data will be posted publicly and the snapshot root will be included in a staged L2 Governor update [1] for community review kicking off a 7 day delay period
+- The snapshot of non-contract delegators will be created. The snapshot data will be posted publicly for community review and a L2 Governor update will be staged to allow the snapshot to be used for claiming on L2 after a 7 day delay period
 - If at any point during the 7 day delay period the snapshot is discovered to be incorrect, the staged update in the L2 Governor will be cancelled, the snapshot will be re-generated and a new 7 day delay period will be kicked off
 
 [1] See [LIP-25](https://github.com/livepeer/LIPs/blob/master/LIPs/LIP-25.md) for details on staged Governor updates.
