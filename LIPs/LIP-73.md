@@ -46,6 +46,8 @@ This proposal presents a design to address these points.
 
 `L2_GOVERNANCE_MULTISIG` is the L2 address of the multisig that owns the L2 protocol contracts. The multisig implementation is a Gnosis Safe deployed at https://arbiscan.io/address/0x04F53A0bb244f015cC97731570BeD26F0229da05. The current signers for the multisig are the same signers as the [L1 governance multisig](https://etherscan.io/address/0x04746b890d090ae3c4c5df0101cfd089a4faca6c).
 
+*Note: At the time of writing, arbiscan.io does not properly display verified contract code for the Gnosis Safe. In order to verify the contract code yourself, you can use the [Gnosis Safe contract code](https://github.com/gnosis/safe-contracts/releases/tag/v1.3.0) and a tool like https://sourcify.dev/.*
+
 `LIP_73_BLOCK_NUMBER` is the block at which at which protocol transactions will be disabled on L1 and protocol transactions will be enabled on L2. The block number is currently selected to fall on February 14th 2022 around 15:00-20:00 UTC. Due to variance in block times it is possible that the selected block number falls outside of this time range and in that scenario there is the possibility of updating the block number closer to the date to be in the specified time range.
 
 All L2 protocol contract parameters outside of the L2 Minter inflation rate (see [this section](#disable-l1-protocol-transactions-and-enable-l2-protocol-transactions) for details on how this parameter will be set) will be set to the L1 protocol contract parameters.
