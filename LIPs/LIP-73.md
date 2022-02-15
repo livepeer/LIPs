@@ -30,7 +30,7 @@ A major problem facing the Livepeer network today is high gas fees on L1 Ethereu
 
 A solution to this problem is to deploy the protocol contracts to a [rollup](https://ethereum.org/en/developers/docs/scaling/layer-2-rollups/) anchored to L1. The gas fees for using contracts on a rollup are lower than the gas fees of using the same contracts on L1. However, there are a few considerations that need to be addressed in order to pursue this solution:
 
-- A specific rollup needs to be chosen and there are many rollups to chose from
+- A specific rollup needs to be chosen and there are many rollups to choose from
 - The L1 contracts already manage funds and state for many users so there needs to be a process by which funds and state can be migrated
 
 This proposal presents a design to address these points.
@@ -48,7 +48,7 @@ This proposal presents a design to address these points.
 
 *Note: At the time of writing, arbiscan.io does not properly display verified contract code for the Gnosis Safe. In order to verify the contract code yourself, you can use the [Gnosis Safe contract code](https://github.com/gnosis/safe-contracts/releases/tag/v1.3.0) and a tool like https://sourcify.dev/.*
 
-`LIP_73_BLOCK_NUMBER` is the block at which at which protocol transactions will be disabled on L1 and protocol transactions will be enabled on L2. The block number is currently selected to fall on February 14th 2022 around 15:00-20:00 UTC. Due to variance in block times it is possible that the selected block number falls outside of this time range and in that scenario there is the possibility of updating the block number closer to the date to be in the specified time range.
+`LIP_73_BLOCK_NUMBER` is the block at which the protocol transactions will be disabled on L1 and protocol transactions will be enabled on L2. The block number is currently selected to fall on February 14th 2022 around 15:00-20:00 UTC. Due to variance in block times it is possible that the selected block number falls outside of this time range and in that scenario there is the possibility of updating the block number closer to the date to be in the specified time range.
 
 All L2 protocol contract parameters outside of the L2 Minter inflation rate (see [this section](#disable-l1-protocol-transactions-and-enable-l2-protocol-transactions) for details on how this parameter will be set) will be set to the L1 protocol contract parameters.
 
@@ -62,11 +62,11 @@ This proposal designates [Arbitrum One](https://offchainlabs.com/)) (henceforth 
 - Permissionless contract deployments
 - Promising roadmap with improvements for further decreasing gas fees including the upcoming "Nitro" release
 
-With this being said, the blockchain scaling landscape will continue evolve so while Arbitrum One may be used in this proposal, the community can and should continue following the development of other rollups and additional scaling solutions in order to take advantage of them for the protocol in the future.
+With this being said, the blockchain scaling landscape will continue to evolve so while Arbitrum One may be used in this proposal, the community can and should continue following the development of other rollups and additional scaling solutions in order to take advantage of them for the protocol in the future.
 
 ### L1 <> L2 LPT Bridge
 
-The LPT bridge is a set of L1 and L2 contracts that integrate with [Arbitrum's cross-chain message passing system](https://developer.offchainlabs.com/docs/bridging_assets) that allow LPT to be moved between L1 and L2. A user will lock LPT on L1 in order to receive LPT on L2 and a user will burn LPT on L2 in order to unlock LPT on L2.
+The LPT bridge is a set of L1 and L2 contracts that integrate with [Arbitrum's cross-chain message passing system](https://developer.offchainlabs.com/docs/bridging_assets) that allow LPT to be moved between L1 and L2. A user will lock LPT on L1 in order to receive LPT on L2 and a user will burn LPT on L2 in order to unlock LPT on L1.
 
 This bridge will be deployed to:
 
@@ -81,7 +81,7 @@ These contracts will be upgradeable by the L1 Governor (for L1 contracts) and L2
 
 ### L1 -> L2 Minter LPT and ETH Migration
 
-In order to support user migrations to L2, we will need to migrate the LPT and ETH held by the L1 Minter to the L2 Migrator (described in further detail the next section). The L2 Migrator will be responsible for using the migrated LPT and ETH to:
+In order to support user migrations to L2, we will need to migrate the LPT and ETH held by the L1 Minter to the L2 Migrator (described in further detail in the next section). The L2 Migrator will be responsible for using the migrated LPT and ETH to:
 
 - Stake LPT in the L2 BondingManager on behalf of users that migrate from L1
 - Distribute ETH to users that are owed fees that migrate from L1 
@@ -169,7 +169,7 @@ After protocol transactions on L2 are enabled and the L1 Minter LPT and ETH are 
 
 The community should also take note of the following:
 
-- The active orchestrator set on L2 will start off empty until orchestrators migrate which means that in the first round after the upgrade rewards could be split amongst a smaller number of orchestrators depending on how many orchestrators migrate immediately after the upgrade
+- The active orchestrators set on L2 will start off empty until orchestrators migrate which means that in the first round after the upgrade rewards could be split amongst a smaller number of orchestrators depending on how many orchestrators migrate immediately after the upgrade
 - The participation rate on L2 will start off at 0 and will increase as users migrate
 - The participation rate on L2 will be calculated as `total stake on L2 / (total supply on L2 + circulating supply on L1)` meaning it will take into account the total supply of LPT across both L1 *and* L2. The total supply on L2 will include any LPT from L1 that has been moved to L2, but it will not include the circulating (i.e. liquid) supply of LPT on L1 which could change if LPT is burned on L1 (since the L1 LPT contract allows users to burn their own LPT). In order for the L2 Minter to be aware of the circulating supply of LPT on L1, there will be a contract on L1 that pushes the latest circulating supply of LPT on L1 if it ever changes to L2 so that the L2 Minter can use that data when calculating the participation rate on L2 
 
