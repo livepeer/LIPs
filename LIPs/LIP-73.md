@@ -3,7 +3,7 @@ lip: 73
 title: Confluence - Arbitrum One Migration
 author: Yondon Fu (@yondonfu)
 type: Standard Track
-status: Accepted
+status: Final
 created: 2021-10-22
 discussions-to: https://forum.livepeer.org/t/lip-l2-stake-migration/1532
 ---

@@ -13,21 +13,21 @@ The first PR should contain the first draft of an LIP. An editor will manually r
 
 ## Index
 
-| LIP                  | Title                                                   | Status   |
-| -------------------- | ------------------------------------------------------- | -------- |
-| [1](LIPs/LIP-1.md)   | LIP Process, Purpose and Guidlines                      | Draft    |
-| [3](LIPs/LIP-3.md)   | Ability To Update Registered Solver in LivepeerVerifier | Final    |
-| [8](LIPs/LIP-8.md)   | Enable Partial Unbonding                                | Final    |
-| [9](LIPs/LIP-9.md)   | Service Registry                                        | Final    |
-| [11](LIPs/LIP-11.md) | Bond Event Details                                      | Final    |
-| [15](LIPs/LIP-15.md) | Poll Based LIP Process                                  | Final    |
-| [16](LIPs/LIP-16.md) | Stake Based Polling System                              | Final    |
-| [19](LIPs/LIP-19.md) | Poll Based Governance                                   | Final    |
-| [25](LIPs/LIP-25.md) | Extensible Governance Contract                          | Final    |
-| [34](LIPs/LIP-34.md) | InflationChange Parameter Update                        | Final    |
-| [35](LIPs/LIP-35.md) | inflationChange Calculation and Parameter Update        | Final    |
-| [36](LIPs/LIP-36.md) | Cumulative Earnings Claiming                            | Final    |
-| [40](LIPs/LIP-40.md) | Minter Math Precision                                   | Final    |
-| [52](LIPs/LIP-52.md) | Snapshot For Claiming Earnings                          | Final    |
-| [56](LIPs/LIP-56.md) | Reward Period                                           | Draft    |
-| [73](LIPs/LIP-73.md) | Confluence - Arbitrum One Migration                     | Accepted |
+| LIP                  | Title                                                   | Status |
+| -------------------- | ------------------------------------------------------- | ------ |
+| [1](LIPs/LIP-1.md)   | LIP Process, Purpose and Guidlines                      | Draft  |
+| [3](LIPs/LIP-3.md)   | Ability To Update Registered Solver in LivepeerVerifier | Final  |
+| [8](LIPs/LIP-8.md)   | Enable Partial Unbonding                                | Final  |
+| [9](LIPs/LIP-9.md)   | Service Registry                                        | Final  |
+| [11](LIPs/LIP-11.md) | Bond Event Details                                      | Final  |
+| [15](LIPs/LIP-15.md) | Poll Based LIP Process                                  | Final  |
+| [16](LIPs/LIP-16.md) | Stake Based Polling System                              | Final  |
+| [19](LIPs/LIP-19.md) | Poll Based Governance                                   | Final  |
+| [25](LIPs/LIP-25.md) | Extensible Governance Contract                          | Final  |
+| [34](LIPs/LIP-34.md) | InflationChange Parameter Update                        | Final  |
+| [35](LIPs/LIP-35.md) | inflationChange Calculation and Parameter Update        | Final  |
+| [36](LIPs/LIP-36.md) | Cumulative Earnings Claiming                            | Final  |
+| [40](LIPs/LIP-40.md) | Minter Math Precision                                   | Final  |
+| [52](LIPs/LIP-52.md) | Snapshot For Claiming Earnings                          | Final  |
+| [56](LIPs/LIP-56.md) | Reward Period                                           | Draft  |
+| [73](LIPs/LIP-73.md) | Confluence - Arbitrum One Migration                     | Final  |
