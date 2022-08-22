@@ -31,3 +31,4 @@ The first PR should contain the first draft of an LIP. An editor will manually r
 | [52](LIPs/LIP-52.md) | Snapshot For Claiming Earnings                          | Final  |
 | [56](LIPs/LIP-56.md) | Reward Period                                           | Draft  |
 | [73](LIPs/LIP-73.md) | Confluence - Arbitrum One Migration                     | Final  |
+| [83](LIPs/LIP-83.md) | roundLength Parameter Update                            | Draft  |
