@@ -24,7 +24,7 @@ This increase adjusts for the shorter block times after the Merge. It is needed 
 
 ## Specification Rationale
 
-The last economic change to the protocol [(updating the inflation change parameter)](https://github.com/livepeer/LIPs/issues/34) was implemented two years ago. Based on https://etherscan.io/chart/blocktime, the average block time since then was 13.285642 seconds.
+The last economic change to the protocol [(updating the inflation change parameter)](https://github.com/livepeer/LIPs/issues/34) was implemented two years ago. Based on https://etherscan.io/chart/blocktime, the average block time since then (2020-08-18) and the day before this proposal was created (2022-08-19) was 13.285642 seconds.
 So the average round length is: 13.285642s * 5760 blocks = 76525.3 seconds.
 To get the new `roundLength` to keep the status quo after the merge: 76525.3s / 12s = 6377.1
 
