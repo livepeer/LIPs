@@ -36,11 +36,11 @@ This parameter change is fully backwards compatible.
 
 ## Test Cases
 
-tbd
+There are existing test cases for the `setRoundLength()` function in the RoundsManager in https://github.com/livepeer/protocol/blob/fa992d0b6e46f22231ec770408182215753c69c1/test/unit/RoundsManager.js#L66
 
 ## Implementation
 
-tbd
+There is an existing implementation of the `setRoundLength()` function in the RoundsManager in https://github.com/livepeer/protocol/blob/fa992d0b6e46f22231ec770408182215753c69c1/contracts/rounds/RoundsManager.sol#L55 which is used to update the `roundLength` parameter. No additional implementation changes are required for this proposal.
 
 ## Copyright
 
