@@ -3,7 +3,7 @@ lip: 83
 title: roundLength Parameter Update
 author: vires-in-numeris (@0xVires), <hi@vires-in-numeris.org>
 type: Parameter
-status: Accepted
+status: Final
 created: 2022-08-20
 discussions-to: https://forum.livepeer.org/t/increase-blocks-per-round-after-the-merge
 ---
