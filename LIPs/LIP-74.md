@@ -3,7 +3,7 @@ lip: 74
 title: L1 Minting and L2 Staking
 author: Yondon Fu (@yondonfu)
 type: Standard Track
-status: Draft
+status: Abandoned
 created: 2021-10-22
 discussions-to: https://forum.livepeer.org/t/lip-x-l1-minting-and-l2-staking/1534 
 requires: 73
