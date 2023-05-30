@@ -3,7 +3,7 @@ lip: 56
 title: Reward Period
 author: Yondon Fu (@yondonfu)
 type: Standard Track
-status: Last Call
+status: Abandoned
 created: 2020-09-03
 discussions-to: https://github.com/livepeer/LIPs/issues/56
 ---
