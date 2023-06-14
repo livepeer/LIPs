@@ -5,7 +5,7 @@ author: Doug Petkanics (@dob), Victor Elias (@victorges)
 type: Standard Track
 status: Draft
 created: 2023-06-14
-discussions-to: [Forum Pre-Proposal](https://forum.livepeer.org/t/livepeer-delta-phase-pre-proposal-sustainability-public-goods-funding-treasury-and-decentralization/2056)
+discussions-to: https://forum.livepeer.org/t/livepeer-delta-phase-pre-proposal-sustainability-public-goods-funding-treasury-and-decentralization/2056
 requires: https://github.com/dob/LIPs/blob/dob/delta/LIPs/LIP-livepeer_treasury.md
 ---
 
