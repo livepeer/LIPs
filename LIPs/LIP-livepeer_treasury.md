@@ -50,14 +50,37 @@ The mechanisms for making proposals via the `TreasuryGovernor`, and voting on pr
 
 **Proposals**
 
-Proposals can be made by any user with a staked LPT balance exceeding the `Proposal Threshold`.
+Proposals can be made by any user with a staked LPT balance exceeding the `Proposal Threshold`. Users will be able to submit text and media supported proposals, along with an amount of LPT to be released from the treasury to a specific address if the proposal passes.
+
+*(Details of specific parameters and spec to be filled in.)*
 
 
 **Stake snapshotting**
 
+The spirit of Livepeer's existing delegated stake weighted voting for governance actions captured in [LIP-19](https://github.com/dob/LIPs/blob/dob/delta/LIPs/LIP-19.md) is maintained in this LIP for treasury management. Orchestrators can vote on proposals carrying the full weight of their delegated stake, however any delegator can show up to override the vote of their orchestrator on behalf of their own stake. However, there are some differences in the mechanics in order to support the Governor framework. The largest is that:
+
+* **Stake amounts must be snapshotted at the start round of voting on a proposal**, whereas in existing Livepeer governance stake amounts are tallied at the conclusion of a proposal.
+
+This update requires a new stake snapshotting library in the Livepeer protocol smart contracts, and a number of hooks in stake related actions within the existing BondingManager. 
+
+*(Details of specific parameters and spec to be filled in.)*
+
 **Voting**
 
+When proposals are made on chain, they are introduced with a `Voting Delay` and a `Voting Period`. This LIP proposes the initial values of these as 1 round and 10 rounds respectively. After the `Voting Delay` has passed, delegators and orchestrators can vote for, against, or abstain on proposals until the `Voting Period` has ended. Abstained votes will count towards qorum, but will not affect the for or against tallies.
+
+* The `QUORUM` and `QUOTA` values from Livepeer's existing governance will be used to determine whether the proposal has received enough votes to be valid, and if the poll passed or failed. At the time of writing, then `QUORUM` value is 33% of active stake, and the `QUOTA` is 50%, meaning that as long as 1/3rd of active stake votes, if the majority of the votes are in favor passing, the proposal will pass.
+
+*(Details of specific parameters and spec to be filled in.)*
+
 **Execution**
+
+Upon the end of the `Voting Period`, it will be determinable on chain whether the proposal passed or did not pass. If it passed, then there is an `execute` transaction callable by anyone, that will execute the associated transaction associated with the proposal. By default, initially the only transaction type will be to send LPT from the treasury to the specified receive address. If the proposal did not pass or did not reach quorum, then the `execute` function will revert and no action will be taken.
+
+In the future, additional transaction types that can be executed include sending additional assets in the treasury beyond LPT, or even making protocol updates should the community vote to leverage this governor framework as the owner of the Livepeer protocol.
+
+*(Details of specific parameters and spec to be filled in.)*
+
 
 ## Specification Rationale
 
