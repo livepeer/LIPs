@@ -43,7 +43,7 @@ In the pre-proposal discussion thread, the architecture was described as "tier 2
 * An Access Committee, that specializes in ensuring proper L1/L2 bridge liquidity, DEX liquidity, and cross chain access points to expand usability of the Livepeer network.
 * An Events Program that specializes in funding decisions about sponsorship, presence, and execution across various ecosystem events around the world to raise Livepeer awareness.
 
-**What is an example of something that would not qualify as an SPE, that the community should consider rejecting the proposal out of the social principals outlined here? **
+**What is an example of something that would not qualify as an SPE, that the community should consider rejecting the proposal out of the social principals outlined here?**
 
 * A single application applying for funding to expand their feature set. Instead they should apply to the grants program or Video Builder DAO examples mentioned above.
 * A single service provider looking to run a single event focused on Livepeer. Instead they should apply to the theoretical events program group mentioned above.
