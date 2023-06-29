@@ -2,7 +2,7 @@
 lip: funding_entity_conventions
 title: Funding Entity Conventions
 author: Doug Petkanics (@dob)
-type: Informational
+type: Meta
 status: Draft
 created: 2023-06-29
 discussions-to: https://forum.livepeer.org/t/livepeer-delta-phase-pre-proposal-sustainability-public-goods-funding-treasury-and-decentralization/2056
@@ -11,17 +11,17 @@ requires: https://github.com/dob/LIPs/blob/dob/delta/LIPs/LIP-livepeer_treasury.
 
 ## Abstract
 
-This informational LIP, outlines an expectation for the types of proposals that the community would consider valid to vote "yes" on, as part of the larger Livepeer treasury governance. While this only informs a social consensus, it can hopefully serve as a reference document to point back on when debating whether a proposal is valid for consideration in the first place.
+This meta LIP, outlines an expectation for the types of proposals that the community would consider valid to vote "yes" on, as part of the larger Livepeer treasury governance. While this only informs a social consensus, it can hopefully serve as a reference document to point back on when debating whether a proposal is valid for consideration in the first place.
 
 ## Motivation
 
-The Livepeer Delta proposal introduces an onchain treasury, governed by the community of Livepeer token holders. It specifies that anyone can make a proposal for transferring funds out of the treasury, as long as they pay the `Proposal Threshold` amount of LPT. While technically, any proposal can be voted on and pass, it is good if the community has a set of social conventions to dictate what should be considered as valid, versus what might be voted against on grounds that it violates the expectations of what the treasury is to be used for. The motivation behind this short informational LIP is to lay out some of these social conventions.
+The Livepeer Delta proposal introduces an onchain treasury, governed by the community of Livepeer token holders. It specifies that anyone can make a proposal for transferring funds out of the treasury, as long as they pay the `Proposal Threshold` amount of LPT. While technically, any proposal can be voted on and pass, it is good if the community has a set of social conventions to dictate what should be considered as valid, versus what might be voted against on grounds that it violates the expectations of what the treasury is to be used for. The motivation behind this short meta LIP is to lay out some of these social conventions.
 
 In absence of this acknowledged set of conventions, any proposal could be argued as valid. An attacker could, for example, argue that their proposal to simply transfer LPT to their wallet is valid because "code is law", and the protocol allows it. Given this acknowledged set of conventions up front however, all stakeholders would have something to point to, that argues this is clearly against the spirit of the treasury, and it would be more likely that voters would vote "no" on this proposal on those grounds. 
 
 ## Specification
 
-There are two conventions initially proposed in this informational LIP.
+There are two conventions initially proposed in this meta LIP.
 
 **1. The treasury should be used to fund public goods in the Livepeer Ecosystem.**
 
@@ -58,7 +58,7 @@ SPEs have flexibility. In some cases they can be many member DAOs that run fully
 
 --------
 
-This informational LIP initially contains 2 strong conventions. Over time, should the community is encouraged to propose additional conventions, depending upon what is learned in the early days of the treasury governance process.
+This meta LIP initially contains 2 strong conventions. Over time, should the community is encouraged to propose additional conventions, depending upon what is learned in the early days of the treasury governance process.
 
 ## Backwards Compatibility
 
