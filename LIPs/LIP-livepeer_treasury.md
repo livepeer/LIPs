@@ -90,7 +90,7 @@ In the future, additional transaction types that can be executed include sending
 There are no backwards incompatibilities introduced by this proposal. However there are a couple small variations from Livepeer's existing protocol governance due to implementation requirements. They include:
 
 * Voting power is determined as of the round at which the voting window for a proposal begins. Whereas in existing protocol governance, voting power is determined at the end round of the voting period.
-* Only active O's and delegators towards active O's stake will be counted within a vote. If users would like to be able to vote on treasury proposals, they should stake towards O's in the active set.
+* Only active O's and delegators towards active O's stake will be counted within the quorum calculation, however they can still vote with their own stake. This is a small quirk in the stake accounting details that should have minimal impact, but it's worth noting. If a large block of stake were delegated to a non-active O, then technically the number of token to reach quorum would be less than if that stake were delegated toward an active O. 
 
 
 ## Test Cases
