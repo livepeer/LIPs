@@ -5,6 +5,7 @@ author: Doug Petkanics (@dob), Victor Elias (@victorges)
 type: Standard Track
 status: Draft
 created: 2023-06-14
+part-of: treasury_bundle
 discussions-to: https://forum.livepeer.org/t/livepeer-delta-phase-pre-proposal-sustainability-public-goods-funding-treasury-and-decentralization/2056
 ---
 
