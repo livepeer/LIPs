@@ -35,18 +35,18 @@ This proposal requires [LIP-livepeer_treasury](https://github.com/dob/LIPs/blob/
 We introduce two new parameters to the protocol's `BondingManager`:
 
 * `treasuryRewardCutRate`: The % of newly minted rewards to be routed into the Livepeer Treasury.
-* `treasuryContributionCeiling`: If the balance of the treasury in LPT is above this value, automatic treasury contributions will halt.
+* `treasuryBalanceCeiling`: If the balance of the treasury in LPT is above this value, automatic treasury contributions will halt.
 
 Each of these parameters should have a setter in the `BondingManager` which is invokable only by `onlyControllerOwner`.
 
-The `treasuryRewardCutRate` should conform to the protocols standard representation of percent values represented as uints with maximum precision flexibility, and the `treasuryContributionCeiling` should be a uint value representing an amount of LPT with max precision using the standard 18 decimal places to account for LPTu.
+The `treasuryRewardCutRate` should conform to the protocols standard representation of percent values represented as uints with maximum precision flexibility, and the `treasuryBalanceCeiling` should be a uint value representing an amount of LPT with max precision using the standard 18 decimal places to account for LPTu.
 
 ### Routing LPT into the treasury
 
 LPT will be routed into the treasury during the `reward()` transaction invoked by Orchestrators each round.
 
 * In the `BondingManager`'s `rewardWithHint()` function:
-   * Check the current LPT balance on the Livepeer Treasury. If the balance > `treasuryContributionCeiling`, set `treasuryRewardCutRate = 0`.
+   * Check the current LPT balance on the Livepeer Treasury. If the balance > `treasuryBalanceCeiling`, set `treasuryRewardCutRate = 0`.
    * Calculate the totalRewards available and mint them based on the Orchestrator's delegate stake as usual.
    * Calculate the treasuryRewards as a % of the totalRewards based upon the `treasuryRewardCutRate`. Calculate the transcoderRewards by subtracting the treasuryRewards from the totalRewards.
    * Route the treasuryRewards into the Livepeer Treasury.
@@ -55,11 +55,11 @@ LPT will be routed into the treasury during the `reward()` transaction invoked b
 ### Initial Values
 
 * `treasuryRewardCutRate`: 12.5%
-* `treasuryContributionCeiling`: 750000 LPT 
+* `treasuryBalanceCeiling`: 750000 LPT 
 
 ## Specification Rationale
 
-This method of deducting a % from the round-based rewards out of current protocol inflation based on a governance controlled parameter meets requirements one and two of the specified principles: namely that public goods will be funded by the commons and the community will have governance control over the level of contribution. The `treasuryContributionCeiling` ensures that the community will be forced to take proactive action to re-enable any contribution percentage value greater than zero if the treasury is not being distributed efficiently and there is "enough" LPT already within the treasury. Finally, the supply expectations of the Livepeer protocol, amongst the wide number of stakeholders who have already made participation decisions based upon these assumptions, will not be violated, as they would be in an alternative implementation for funding the treasury such as an additional token mint.
+This method of deducting a % from the round-based rewards out of current protocol inflation based on a governance controlled parameter meets requirements one and two of the specified principles: namely that public goods will be funded by the commons and the community will have governance control over the level of contribution. The `treasuryBalanceCeiling` ensures that the community will be forced to take proactive action to re-enable any contribution percentage value greater than zero if the treasury is not being distributed efficiently and there is "enough" LPT already within the treasury. Finally, the supply expectations of the Livepeer protocol, amongst the wide number of stakeholders who have already made participation decisions based upon these assumptions, will not be violated, as they would be in an alternative implementation for funding the treasury such as an additional token mint.
 
 ### Funding within reward call
 
@@ -69,9 +69,9 @@ It was considered whether to fund the treasury within the `reward()` call transa
 
 The discussion for this proposal in [the forum](https://forum.livepeer.org/t/livepeer-delta-phase-pre-proposal-sustainability-public-goods-funding-treasury-and-decentralization/2056/1) and community calls yielded quite a bit discourse and modeling on this topic, and there's clearly no value which will satisfy everyone. If you look at the average tax-to-GDP ratio of productive nation states, you'll see that it often falls at around the 10-25% range. Decentralized, blockchain based, digital communities should be more efficient than many beurocraticly-heavy nation states, however it could also be argued that Livepeer is more "pre-product-market-fit" than many nation states, hasn't achieved sustainability in terms of its fee market yet, and requires significant public goods funding to decentralize and enable many forms of contribution as the bootstrapping phase continues.
 
-While 12.5% proposed is a bit arbitrary, coupled with the `treasuryContributionCeiling` parameter it creates an automatic cutoff that will force the community to re-enable a rate above 0% should the treasury ever exceed this value. Further, because the `treasuryRewardCutRate` gets set to 0% when this occurs, any governance proposal to re-activate it can use a new rate, rather than it being required that the 12.5% be the only available value.
+While 12.5% proposed is a bit arbitrary, coupled with the `treasuryBalanceCeiling` parameter it creates an automatic cutoff that will force the community to re-enable a rate above 0% should the treasury ever exceed this value. Further, because the `treasuryRewardCutRate` gets set to 0% when this occurs, any governance proposal to re-activate it can use a new rate, rather than it being required that the 12.5% be the only available value.
 
-As for the proposed value of the `treasuryContributionCeiling`, this represents a bit over 2.5% of the LPT in circulation. If the only source of LPT for the treasury were the inflationary LPT generated by the updates in this LIP, and none were ever distributed, it would take about 1000 rounds to meet this value. However, it is hoped there are additional sources of treasury contribution including grants, philanthropy, a portion of the grants node treasury, and even ecosystem programs run by proposers to the treasury, so in practice, this value would give the community confidence that the treasury can build up meaningful public goods funding for a year+ before it would be automatically cut off via the protocol.
+As for the proposed value of the `treasuryBalanceCeiling`, this represents a bit over 2.5% of the LPT in circulation. If the only source of LPT for the treasury were the inflationary LPT generated by the updates in this LIP, and none were ever distributed, it would take about 1000 rounds to meet this value. However, it is hoped there are additional sources of treasury contribution including grants, philanthropy, a portion of the grants node treasury, and even ecosystem programs run by proposers to the treasury, so in practice, this value would give the community confidence that the treasury can build up meaningful public goods funding for a year+ before it would be automatically cut off via the protocol.
 
 I will leave the modeling and guesswork of the representative $ value of this treasury based on LPT price outside of this proposal, because 1) we know that that swings with the markets and is unpredictable, and 2) these values can be easily changed via governance should the community wish to react to changing market conditions and evidenced based performance of the treasury.
 
