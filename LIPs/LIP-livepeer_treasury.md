@@ -60,8 +60,6 @@ The mechanisms for making proposals via the `LivepeerGovernor`, and voting on pr
 
 Proposals can be made by any user with a staked LPT balance exceeding the `Proposal Threshold`. Users will be able to submit text and media supported proposals, along with an amount of LPT to be released from the treasury to a specific address if the proposal passes.
 
-*(Details of specific parameters and spec to be filled in.)*
-
 
 **Stake snapshotting**
 
