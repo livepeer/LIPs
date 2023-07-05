@@ -16,8 +16,8 @@ This proposal describes a bundle of LIPs that establish an onchain Livepeer Trea
 
 LIPs included in the bundle are:
 
-- [LIP-livepeer_treasury](https://github.com/livepeer/LIPs/blob/master/LIPs/LIP-livepeer_treasury.md): Livepeer Treasury
-- [LIP-funding_entity_conventions](https://github.com/livepeer/LIPs/blob/master/LIPs/LIP-funding_entity_conventions.md): Funding Entity Conventions
+- [LIP-livepeer_treasury](LIP-livepeer_treasury.md): Livepeer Treasury
+- [LIP-funding_entity_conventions](LIP-funding_entity_conventions.md): Funding Entity Conventions
 
 ## Specification Rationale
 
