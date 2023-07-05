@@ -28,9 +28,16 @@ While important, building governance and treasury management tools are not core 
 
 ## Specification
 
-Because this spec covers updates across many areas of the Livepeer protocol, it will be accompanied by a reference implementation. It will attempt to convey a plain English expectation of the intended behavior, as well as reference to any changes/additions to the protocol so that it can be verified by an auditor, however the implementation details will be left to the accompanying candidate implementation.
+Because this spec covers updates across many areas of the Livepeer protocol, it first attempt to explain a plain English writeup of the intended behaviors encoded into the treasury and associated code updates to capture voting state. But it will be accompanied by two additional assets:
 
-### Creation of the treasury - The Governor framework
+1) A rigorous technical specification of the updates. This will allow an auditor to confirm that the implementation matches the specificly intended behavior.
+2) A reference implementation.
+
+Where the English description contained in this proposal leaves ambiguity, seems at odds with, or omits certain detail, the rigorous technical spec should always take priority.
+
+### Summary
+
+#### Creation of the treasury - The Governor framework
 
 A Livepeer Treasury will be created using the popular [Governor Framework]() as used within many decentralized projects including Compound and Uniswap, and supported by tools such as Tally. In particular, we'll be deploying an instance of a Governor based off of the popular [OpenZeppelin]() implementation. However in order to comply with Livepeer's existing delegated stake weighted governance, our implementation will differ from OpenZeppelin's in that we won’t use the default `GovernorVotes` (”voting power”) and `GovernorCountingSimple` (”tallying”) extensions, but rather implement our custom logic for both.
 
@@ -40,14 +47,14 @@ There are three main parameters to creating a governor instance:
 * **Voting Period** - we propose initializing with a 10 round voting period.
 * **Proposal Threshold** - we propose initializing with a 100 LPT minimum staked balance to make a proposal, which matches Livepeer's existing governance.
 
-The Livepeer `TreasuryGovernor` will be the instance of the Governor/Treasury and will be registered with the `Controller` as are all the other smart contracts in the protocol.
+The Livepeer `LivepeerGovernor` will be the instance of the Governor/Treasury and will be registered with the `Controller` as are all the other smart contracts in the protocol.
 
 Upon creation, LPT and other assets can be transfered into this smart contract via any mechanism.
 
-The mechanisms for making proposals via the `TreasuryGovernor`, and voting on proposals via the voting power and tallying mechanisms are described below.
+The mechanisms for making proposals via the `LivepeerGovernor`, and voting on proposals via the voting power and tallying mechanisms are described below.
 
 
-### Governance over the treasury
+#### Governance over the treasury
 
 **Proposals**
 
@@ -64,7 +71,6 @@ The spirit of Livepeer's existing delegated stake weighted voting for governance
 
 This update requires a new stake snapshotting library in the Livepeer protocol smart contracts, and a number of hooks in stake related actions within the existing BondingManager. 
 
-*(Details of specific parameters and spec to be filled in.)*
 
 **Voting**
 
@@ -72,18 +78,16 @@ When proposals are made on chain, they are introduced with a `Voting Delay` and 
 
 * The `QUORUM` and `QUOTA` values from Livepeer's existing governance will be used to determine whether the proposal has received enough votes to be valid, and if the poll passed or failed. At the time of writing, then `QUORUM` value is 33% of active stake, and the `QUOTA` is 50%, meaning that as long as 1/3rd of active stake votes, if the majority of the votes are in favor passing, the proposal will pass.
 
-*(Details of specific parameters and spec to be filled in.)*
-
 **Execution**
 
 Upon the end of the `Voting Period`, it will be determinable on chain whether the proposal passed or did not pass. If it passed, then there is an `execute` transaction callable by anyone, that will execute the associated transaction associated with the proposal. By default, initially the only transaction type will be to send LPT from the treasury to the specified receive address. If the proposal did not pass or did not reach quorum, then the `execute` function will revert and no action will be taken.
 
 In the future, additional transaction types that can be executed include sending additional assets in the treasury beyond LPT, or even making protocol updates should the community vote to leverage this governor framework as the owner of the Livepeer protocol.
 
-*(Details of specific parameters and spec to be filled in.)*
 
+### Rigorous Technical Spec
 
-## Specification Rationale
+See [the technical spec here](../assets/treasury_technical_spec.md). 
 
 
 ## Backwards Compatibility
