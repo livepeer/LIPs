@@ -1,12 +1,10 @@
 # Treasury LIP Technical Specification
 
-- **Index**
-
 The governor implementation will leverage the [Governance primitives from OpenZeppelin](https://docs.openzeppelin.com/contracts/4.x/api/governance) and consist of the following new contracts:
 
 - `BondingCheckpoints`: manages checkpoints of the bonding state to provide historical voting power calculation.
 - `BondingCheckpointsVotes`: wraps the `BondingCheckpoints` above as an [`IERC5805Upgradeable`](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/interfaces/IERC5805Upgradeable.sol) used by the OpenZeppelin extensions.
-- `[TimelockControllerUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/TimelockControllerUpgradeable.sol)` (OpenZeppelin): allows enforcing delays in proposals execution.
+- [TimelockControllerUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/TimelockControllerUpgradeable.sol) (OpenZeppelin): allows enforcing delays in proposals execution.
 - `LivepeerGovernor`: Owns the treasury and manages creating, voting and executing proposals.
 
 # Definitions
@@ -144,10 +142,10 @@ The checkpointed state should be consistent with the stake at the start of the s
 - `getBondingStateAt`
     - Returns the checkpointed bonding state of an `_account` in the specified `_round`.
     - The `delegateAddress` is the address that the delegator was bonding their stake to. In the case of transcoders this MUST always be its own address (self-delegation).
-        - The result MUST be exactly the same as the `delegateAddress` that would have been returned by `BONDING_MANAGER.getDelegator(_account)` at the **start** of the **`_round`.
+        - The result MUST be exactly the same as the `delegateAddress` that would have been returned by `BONDING_MANAGER.getDelegator(_account)` at the **start** of the `_round`.
     - The returned `amount` has a different behavior depending on if the address is a transcoder or a delegator.
         - For transcoders, it MUST match the result of calling `BONDING_MANAGER.transcoderTotalStake(_account)` at the **start** of the `_round`.
-        - For delegators, it MUST match the result of calling `bondingManager.pendingStake(_account, 0)` at the **start** of the ****`_round`.
+        - For delegators, it MUST match the result of calling `bondingManager.pendingStake(_account, 0)` at the **start** of the `_round`.
 
 ## BondingCheckpointsVotes
 
@@ -295,11 +293,11 @@ The `LivepeerGovernor` contract is the main contract and plugs all the other pie
 
 It also inherits from the following functional contracts:
 
-- `[GovernorUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/GovernorUpgradeable.sol)` (OpenZeppelin): Core OpenZeppelin governance contract.
-- `[GovernorSettingsUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/extensions/GovernorSettingsUpgradeable.sol)` (OpenZeppelin): Manages updatable parameters without requiring an upgrade.
-- `[GovernorTimelockControlUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/extensions/GovernorTimelockControlUpgradeable.sol)` (OpenZeppelin): Integrates `TimelockController` for delayed proposal execution.
-- `[GovernorVotesUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/extensions/GovernorVotesUpgradeable.sol)` (OpenZeppelin): Votes module that extracts voting weight from an [`IERC5805Upgradeable`](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/interfaces/IERC5805Upgradeable.sol) (implemented by `BondingCheckpointsVotes`).
-- `[GovernorVotesQuorumFractionUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/extensions/GovernorVotesQuorumFractionUpgradeable.sol)` (OpenZeppelin): Manages an updatable quorum parameter without requiring an upgrade.
+- [GovernorUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/GovernorUpgradeable.sol) (OpenZeppelin): Core OpenZeppelin governance contract.
+- [GovernorSettingsUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/extensions/GovernorSettingsUpgradeable.sol) (OpenZeppelin): Manages updatable parameters without requiring an upgrade.
+- [GovernorTimelockControlUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/extensions/GovernorTimelockControlUpgradeable.sol) (OpenZeppelin): Integrates `TimelockController` for delayed proposal execution.
+- [GovernorVotesUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/extensions/GovernorVotesUpgradeable.sol) (OpenZeppelin): Votes module that extracts voting weight from an [`IERC5805Upgradeable`](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/interfaces/IERC5805Upgradeable.sol) (implemented by `BondingCheckpointsVotes`).
+- [GovernorVotesQuorumFractionUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/extensions/GovernorVotesQuorumFractionUpgradeable.sol) (OpenZeppelin): Manages an updatable quorum parameter without requiring an upgrade.
 - `GovernorCountingOverridable`: Custom implementation for the `Governor` Counting module to allow delegators to override their delegated orchestrator votes.
 
 Notice that most of the functions from the governor come from OpenZeppelin, either the main `GovernorUpgradeable` or extensions. Their interface is omitted for simplicity and this includes only the overridden methods. The only custom extension is the `GovernorCountingOverridable` which will be described afterwards.
