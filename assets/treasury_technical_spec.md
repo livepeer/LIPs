@@ -98,7 +98,7 @@ contract BondingCheckpoints is IERC6372Upgradeable {
 
     function getTotalActiveStakeAt(uint256 _round) external view returns (uint256);
 
-    function hasCheckpoint(address _account) external virtual returns (bool);
+    function hasCheckpoint(address _account) external view returns (bool);
 
     function getBondingStateAt(address _account, uint256 _round)
         external
