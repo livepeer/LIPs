@@ -98,6 +98,8 @@ contract BondingCheckpoints is IERC6372Upgradeable {
 
     function getTotalActiveStakeAt(uint256 _round) external view returns (uint256);
 
+    function hasCheckpoint(address _account) external view returns (bool);
+
     function getBondingStateAt(address _account, uint256 _round)
         external
         view
@@ -139,9 +141,12 @@ The checkpointed state should be consistent with the stake at the start of the s
     - The `_round` argument:
         - It MUST be lower or equal to `ROUNDS_MANAGER.currentRound()`
         - The corresponding round MUST have been initialized. The implementation should differentiate when the round hadn’t been initialized and when the total stake was `0` at the time. It should only revert when the round wasn’t initialized.
+- `hasCheckpoint`
+    - Returns whether the provided `_account` has any checkpoint already registered.
+    - This is mostly a utility for an initialization script after the first deploy, to make sure to checkpoint each account initial state only once.
 - `getBondingStateAt`
     - Returns the checkpointed bonding state of an `_account` in the specified `_round`.
-    - The `delegateAddress` is the address that the delegator was bonding their stake to. In the case of transcoders this MUST always be its own address (self-delegation).
+    - The returned `delegateAddress` is the address that the delegator was bonding their stake to. In the case of transcoders this MUST always be its own address (self-delegation).
         - The result MUST be exactly the same as the `delegateAddress` that would have been returned by `BONDING_MANAGER.getDelegator(_account)` at the **start** of the `_round`.
     - The returned `amount` has a different behavior depending on if the address is a transcoder or a delegator.
         - For transcoders, it MUST match the result of calling `BONDING_MANAGER.transcoderTotalStake(_account)` at the **start** of the `_round`.
