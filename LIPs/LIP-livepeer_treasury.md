@@ -11,7 +11,7 @@ discussions-to: https://forum.livepeer.org/t/livepeer-delta-phase-pre-proposal-s
 
 ## Abstract
 
-This proposal, one piece of the larger set of changes codenamed Livepeer Delta, introduces an on chain treasury governed by actively participating LPT holders. Governance over this treasury is described, and modeled after Livepeer's existing protocol governance, including its delegated stake weighted voting, quorum, and theshold requirements. However it proposes the use of the Governor Framework such that votes will be binding on chain with permissionless release of treasury funds to the target recipients should a proposal pass.
+This proposal, one piece of the larger set of changes codenamed Livepeer Delta, introduces an onchain treasury governed by actively participating LPT holders. Governance over this treasury is described, and modeled after Livepeer's existing protocol governance, including its delegated stake weighted voting, quorum, and theshold requirements. However it proposes the use of the Governor Framework such that votes will be binding onchain with permissionless release of treasury funds to the target recipients should a proposal pass.
 
 ## Motivation
 
@@ -39,7 +39,7 @@ Where the English description contained in this proposal leaves ambiguity, seems
 
 #### Creation of the treasury - The Governor framework
 
-A Livepeer Treasury will be created using the popular [Governor Framework]() as used within many decentralized projects including Compound and Uniswap, and supported by tools such as Tally. In particular, we'll be deploying an instance of a Governor based off of the popular [OpenZeppelin]() implementation. However in order to comply with Livepeer's existing delegated stake weighted governance, our implementation will differ from OpenZeppelin's in that we won’t use the default `GovernorVotes` (”voting power”) and `GovernorCountingSimple` (”tallying”) extensions, but rather implement our custom logic for both.
+A Livepeer Treasury will be created using the popular [Governor Framework](https://docs.compound.finance/v2/governance/) as used within many decentralized projects including Compound and Uniswap, and supported by tools such as Tally. In particular, we'll be deploying an instance of a Governor based off of the popular [OpenZeppelin](https://docs.openzeppelin.com/contracts/4.x/api/governance) implementation. However in order to comply with Livepeer's existing delegated stake weighted governance, our implementation will differ from OpenZeppelin's in that we won’t use the default `GovernorVotes` (”voting power”) and `GovernorCountingSimple` (”tallying”) extensions, but rather implement our custom logic for both.
 
 There are three main parameters to creating a governor instance:
 
@@ -72,13 +72,13 @@ This update requires a new stake snapshotting library in the Livepeer protocol s
 
 **Voting**
 
-When proposals are made on chain, they are introduced with a `Voting Delay` and a `Voting Period`. This LIP proposes the initial values of these as 1 round and 10 rounds respectively. After the `Voting Delay` has passed, delegators and orchestrators can vote for, against, or abstain on proposals until the `Voting Period` has ended. Abstained votes will count towards qorum, but will not affect the for or against tallies.
+When proposals are made onchain, they are introduced with a `Voting Delay` and a `Voting Period`. This LIP proposes the initial values of these as 1 round and 10 rounds respectively. After the `Voting Delay` has passed, delegators and orchestrators can vote for, against, or abstain on proposals until the `Voting Period` has ended. Abstained votes will count towards qorum, but will not affect the for or against tallies.
 
 * The `QUORUM` and `QUOTA` values from Livepeer's existing governance will be used to determine whether the proposal has received enough votes to be valid, and if the poll passed or failed. At the time of writing, then `QUORUM` value is 33% of active stake, and the `QUOTA` is 50%, meaning that as long as 1/3rd of active stake votes, if the majority of the votes are in favor passing, the proposal will pass.
 
 **Execution**
 
-Upon the end of the `Voting Period`, it will be determinable on chain whether the proposal passed or did not pass. If it passed, then there is an `execute` transaction callable by anyone, that will execute the associated transaction associated with the proposal. By default, initially the only transaction type will be to send LPT from the treasury to the specified receive address. If the proposal did not pass or did not reach quorum, then the `execute` function will revert and no action will be taken.
+Upon the end of the `Voting Period`, it will be determinable onchain whether the proposal passed or did not pass. If it passed, then there is an `execute` transaction callable by anyone, that will execute the associated transaction associated with the proposal. By default, initially the only transaction type will be to send LPT from the treasury to the specified receive address. If the proposal did not pass or did not reach quorum, then the `execute` function will revert and no action will be taken.
 
 In the future, additional transaction types that can be executed include sending additional assets in the treasury beyond LPT, or even making protocol updates should the community vote to leverage this governor framework as the owner of the Livepeer protocol.
 
@@ -93,7 +93,7 @@ See [the technical spec here](../assets/treasury_technical_spec.md).
 There are no backwards incompatibilities introduced by this proposal. However there are a couple small variations from Livepeer's existing protocol governance due to implementation requirements. They include:
 
 * Voting power is determined as of the round at which the voting window for a proposal begins. Whereas in existing protocol governance, voting power is determined at the end round of the voting period.
-* Only active O's and delegators towards active O's stake will be counted within the quorum calculation, however they can still vote with their own stake. This is a small quirk in the stake accounting details that should have minimal impact, but it's worth noting. If a large block of stake were delegated to a non-active O, then technically the number of token to reach quorum would be less than if that stake were delegated toward an active O. 
+* Only active Orchestrators and delegators towards active Orchestrators stake will be counted within the quorum calculation, however they can still vote with their own stake. This is a small quirk in the stake accounting details that should have minimal impact, but it's worth noting. If a large block of stake were delegated to a non-active Orchestrator, then technically the number of token to reach quorum would be less than if that stake were delegated toward an active Orchestrators. 
 
 
 ## Test Cases
