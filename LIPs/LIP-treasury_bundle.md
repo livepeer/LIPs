@@ -6,6 +6,7 @@ type: Meta
 status: Draft
 created: 2023-06-29
 requires: livepeer_treasury, funding_entity_conventions
+discussions-to: https://forum.livepeer.org/t/lip-livepeer-treasury-bundle-discussion-thread/2115
 ---
 
 ## Abstract
