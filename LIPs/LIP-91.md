@@ -1,5 +1,5 @@
 ---
-lip: treasury_bundle
+lip: 91
 title: Livepeer Treasury Bundle
 author: Doug Petkanics (@dob), Victor Elias (@victorges)
 type: Meta
