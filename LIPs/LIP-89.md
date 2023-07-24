@@ -24,7 +24,7 @@ Two characteristics which were motivators for this proposal were:
 1. Strive for similarities with Livepeer's existing protocol governance. By sticking with these already ratified conventions initially, the community can use said governance to evolve over time towards any updated mechanics.
 2. Bias towards simplicity and the ability to take advantage of existing popular governance tools and frameworks, rather than spend significant time developing, testing, auditing, and iterating on our own bespoke tools.
 
-While important, building governance and treasury management tools are not core activities towards building the world's open video infrastructure, and as such, this proposal is motivated by efficiently taking advantage of existing tools, over theoretically perfect or overoptimized governance mechanisms. 
+While important, building governance and treasury management tools are not core activities towards building the world's open video infrastructure, and as such, this proposal is motivated by efficiently taking advantage of existing tools, over theoretically perfect or overoptimized governance mechanisms.
 
 ## Specification
 
@@ -67,7 +67,7 @@ The spirit of Livepeer's existing delegated stake weighted voting for governance
 
 * **Stake amounts must be snapshotted at the start round of voting on a proposal**, whereas in existing Livepeer governance stake amounts are tallied at the conclusion of a proposal.
 
-This update requires a new stake snapshotting library in the Livepeer protocol smart contracts, and a number of hooks in stake related actions within the existing BondingManager. 
+This update requires a new stake snapshotting library in the Livepeer protocol smart contracts, and a number of hooks in stake related actions within the existing BondingManager.
 
 
 **Voting**
@@ -85,7 +85,7 @@ In the future, additional transaction types that can be executed include sending
 
 ### Rigorous Technical Spec
 
-See [the technical spec here](../assets/treasury_technical_spec.md). 
+See [the technical spec here](../assets/treasury_technical_spec.md).
 
 
 ## Backwards Compatibility
@@ -93,7 +93,7 @@ See [the technical spec here](../assets/treasury_technical_spec.md).
 There are no backwards incompatibilities introduced by this proposal. However there are a couple small variations from Livepeer's existing protocol governance due to implementation requirements. They include:
 
 * Voting power is determined as of the round at which the voting window for a proposal begins. Whereas in existing protocol governance, voting power is determined at the end round of the voting period.
-* Only active Orchestrators and delegators towards active Orchestrators stake will be counted within the quorum calculation, however they can still vote with their own stake. This is a small quirk in the stake accounting details that should have minimal impact, but it's worth noting. If a large block of stake were delegated to a non-active Orchestrator, then technically the number of token to reach quorum would be less than if that stake were delegated toward an active Orchestrators. 
+* Only active Orchestrators and delegators towards active Orchestrators stake will be counted within the quorum calculation, however they can still vote with their own stake. This is a small quirk in the stake accounting details that should have minimal impact, but it's worth noting. If a large block of stake were delegated to a non-active Orchestrator, then technically the number of token to reach quorum would be less than if that stake were delegated toward an active Orchestrators.
 
 
 ## Test Cases

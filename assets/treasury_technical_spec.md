@@ -4,7 +4,7 @@ The governor implementation will leverage the [Governance primitives from OpenZe
 
 - `BondingCheckpoints`: manages checkpoints of the bonding state to provide historical voting power calculation.
 - `BondingCheckpointsVotes`: wraps the `BondingCheckpoints` above as an [`IERC5805Upgradeable`](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/interfaces/IERC5805Upgradeable.sol) used by the OpenZeppelin extensions.
-- [TimelockControllerUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/TimelockControllerUpgradeable.sol) (OpenZeppelin): allows enforcing delays in proposals execution.
+- `Treasury`: holds all funds and executes proposals, inherits from [TimelockControllerUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/TimelockControllerUpgradeable.sol) (OpenZeppelin) to allow enforcing delays in proposals execution.
 - `LivepeerGovernor`: Owns the treasury and manages creating, voting and executing proposals.
 
 # Definitions
@@ -33,7 +33,7 @@ Differently from LIP-16, the voting power and total supply used for calculating 
 
 ## Non-updatable
 
-These parameters are constants in the code that need a contract upgrade to be changed. 
+These parameters are constants in the code that need a contract upgrade to be changed.
 
 - `QUOTA:` The minimum percentage of votes that need to approve a proposal in order for the proposal to be successful.
     - Value: `500000` (same as LIP-16’s `QUOTA`)
@@ -62,10 +62,10 @@ The value of these parameters can be changed by the community through regular go
     - Initial value: `100e18` (same as LIP-16’s `POLL_CREATION_COST`)
     - This value represents 100 LPT
     - Note that this value changed in LIP-73 to become a minimum stake requirement instead of a creation costs, which makes it consistent with how the `Governor` works.
-- `TimelockController.minDelay`: Delay in **blocks** enforced to a proposal execution after its vote has succeeded.
+- `TimelockController.minDelay`: Delay in **seconds** enforced to a proposal execution after its vote has succeeded.
     - Initial value: `0`
     - This represents no enforced delay for proposal execution.
-    - The rationale for including a timelock extension but configuring it with a zero delay is to be able to add an enforced delay in the future through regular governance proposals without requiring contract upgrades. Adding a timelock changes the contract architecture significantly, with the proposal executor and thus the treasury itself changing to be the `TimelockController`.
+    - The rationale for including a timelock extension but configuring it with a zero delay is to be able to add an enforced delay in the future through regular governance proposals without requiring contract upgrades. Adding a timelock changes the contract architecture significantly, with the `TimelockController` becoming the holder of funds and proposal executor.
     - This delay is also not configurable per proposal, even though it is called minimum delay. It could be implemented on our side through a contract upgrade in the future.
 
 # Contracts Details
@@ -216,7 +216,6 @@ These functions are basically proxies to the corresponding `BondingCheckpoints` 
     - Reverts with `"use BondingManager to update vote delegation through bonding"`
 
 > A caveat is that `getPastVotes` returns voting power for any delegated stake (active and inactive), while `getPastTotalSupply` returns only the total **active** stake for the total supply. This can be a problem for any logic that expects that the total active stake is actually the sum of all total supply. In this implementation it is only used to calculate the quorum, so it keeps the same behavior as the existing governance system described in LIP-16.
-> 
 
 ## GovernorCountingOverridable (extension)
 
@@ -274,12 +273,12 @@ The 2 abstract functions should be implemented by inheritors, providing integrat
     - Should return whether the sum of votes pass the minimum defined threshold.
     - It should grab the quorum from `GovernorUpgradeable`'s `quorum()` virtual function. The function is implemented by `GovernorVotesQuorumFractionUpgradeable` below.
     - It should consider all vote types on quorum calculation.
-    - The result should be equivalent to: `For + Abstain + Against > quorum()`
+    - The result should be equivalent to: `For + Abstain + Against >= quorum()`
 - `_voteSucceeded(_proposald)`
     - Should return if the voting resulted in an approval of the proposal.
     - It should grab the quota percentage from the `quota()` virtual function, implemented by the contract that inherits from this.
     - It should consider only the `For` and `Against` votes when calculating the result.
-    - The result should be equivalent to: `For > (For + Against) * quota()`
+    - The result should be equivalent to: `For >= (For + Against) * quota()`
 - `_countVote`
     - Implements the `Governor` virtual function called whenever a vote is cast on a proposal. This is where the actual “override” logic is implemented, using the `votes()` virtual function to access voting power and delegation state at the time of the voting start.
     - The term “vote type count” is used to refer to the values returned by `proposalVotes` above for the vote type corresponding to the casted vote.
@@ -288,6 +287,17 @@ The 2 abstract functions should be implemented by inheritors, providing integrat
         - **Delegator(s) votes first:** the vote type count should increase by the delegator’s voting power.
         - **Delegator(s) vote after their Transcoder:** the vote type count should increase by the delegator’s voting power, while at the same time decreasing the same amount from the vote type count that the Transcoder had cast.
         - **Transcoder vote after their Delegator(s):** the vote type count should increase by the transcoder’s voting power minus the sum of the voting power from all its delegators.
+
+## Treasury
+
+This custom contract exists only to be able to instantiate the `TimelockControllerUpgradeable` contract from OpenZeppelin. It provides no functionality but a public `initialize` function that can be used to initialize the timelock. Its interface is
+exactly the same as `TimelockControllerUpgradeable` so we will avoid detailing it here.
+
+The `TimelockControllerUpgradeable` roles should be configured as:
+- `TIMELOCK_ADMIN_ROLE`: Only the Timelock controller itself should have this role, meaning administration (role updates) has to be done through the timelock itself (i.e. proposals). The enforced minimum delay is only updatable from the timelock regardless of this.
+- `PROPOSER_ROLE`: Only the `LivepeerGovernor` should have this role, meaning any action from the treasury has to be proposed through the governor. Not that anyone with 100 LPT can start a proposal through the Governor, but only the Governor can "propose" (`schedule()`) the execution of those proposals on the treasury Timelock.
+- `EXECUTOR_ROLE`: Only the `LivepeerGovernor` has this role as well, as it needs to update its internal state when a proposal is executed. Its own `execute()` function can be called by anyone.
+- `CANCELLER_ROLE`: Also only given to the `LivepeerGovernor`, even though it is unused in the current implementation. It could be considered giving this role to other agents like the current protocol governor or a security committee, but it will only be useful if we set a non-zero timelock delay.
 
 ## LivepeerGovernor
 
@@ -345,7 +355,9 @@ contract LivepeerGovernor is
 
 - `initialize`
     - Initializes contract state after deploy.
-    - Apart from the already described parameters and the trivial governor `name`, it should
+    - Apart from the already described parameters and the trivial governor `name`, it should initialize all the extensions including:
+      - The votes extension with the `BondingCheckpointsVotes` as its `token` contract
+      - The timelock extension with the `Treasury` as the timelock controller and thus holder of funds and executor of proposals.
 - `bumpVotesAddress`
     - Updates the static `token` contract field from `GovernorVotesUpgradeable` to match the current address of the `BondingCheckpointsVotes`.
 - `proposalThreshold`
