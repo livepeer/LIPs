@@ -6,7 +6,7 @@ type: Standard Track
 status: Draft
 created: 2023-06-14
 discussions-to: https://forum.livepeer.org/t/lip-treasury-contribution-percentage-discussion-thread/2116
-requires: https://github.com/livepeer/LIPs/blob/master/LIPs/LIP-91.md
+requires: 91
 ---
 
 ## Abstract

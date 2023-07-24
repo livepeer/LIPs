@@ -7,7 +7,7 @@ status: Draft
 created: 2023-06-29
 part-of: 91
 discussions-to: https://forum.livepeer.org/t/lip-livepeer-treasury-bundle-discussion-thread/2115 
-requires: https://github.com/livepeer/LIPs/blob/master/LIPs/LIP-89.md
+requires: 89
 ---
 
 ## Abstract

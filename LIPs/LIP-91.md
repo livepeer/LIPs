@@ -5,7 +5,7 @@ author: Doug Petkanics (@dob), Victor Elias (@victorges)
 type: Meta
 status: Draft
 created: 2023-06-29
-requires: #89, #90
+requires: 89, 90
 discussions-to: https://forum.livepeer.org/t/lip-livepeer-treasury-bundle-discussion-thread/2115
 ---
 
@@ -17,8 +17,8 @@ This proposal describes a bundle of LIPs that establish an onchain Livepeer Trea
 
 LIPs included in the bundle are:
 
-- [LIP-88](LIP-88.md): Livepeer Treasury
-- [LIP-89](LIP-89.md): Funding Entity Conventions
+- [LIP-89](LIP-89.md): Livepeer Treasury
+- [LIP-90](LIP-90.md): Funding Entity Conventions
 
 ## Specification Rationale
 
