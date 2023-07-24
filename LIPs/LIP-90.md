@@ -1,13 +1,13 @@
 ---
-lip: funding_entity_conventions
+lip: 90
 title: Funding Entity Conventions
 author: Doug Petkanics (@dob)
 type: Meta
 status: Draft
 created: 2023-06-29
-part-of: treasury_bundle
+part-of: 91
 discussions-to: https://forum.livepeer.org/t/lip-livepeer-treasury-bundle-discussion-thread/2115 
-requires: https://github.com/dob/LIPs/blob/dob/delta/LIPs/LIP-livepeer_treasury.md
+requires: https://github.com/livepeer/LIPs/blob/master/LIPs/LIP-89.md
 ---
 
 ## Abstract
