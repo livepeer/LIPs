@@ -1,11 +1,11 @@
 ---
-lip: livepeer_treasury
+lip: 89
 title: Livepeer Treasury
 author: Doug Petkanics (@dob), Victor Elias (@victorges)
 type: Standard Track
 status: Draft
 created: 2023-06-14
-part-of: treasury_bundle
+part-of: 91
 discussions-to: https://forum.livepeer.org/t/lip-livepeer-treasury-bundle-discussion-thread/2115
 ---
 
@@ -17,7 +17,7 @@ This proposal, one piece of the larger set of changes codenamed Livepeer Delta, 
 
 A crucial step in the decentralization of the Livepeer project is the introduction of a mechanism of governance that gives ability of the stakeholders in the project to direct funding towards public goods that are required for the successful function of the ecosystem as a whole. While Livepeer currently enjoys a solid distribution of network ownership through stake, decentralization of infrastructure operations across the orchestrator pool, and a solid open technology and software base, the current inflation funding based public goods funding mechanism is too tied to node operation and the benevolence of philanthropic actors. The motivation behind this proposal is to introduce a mechanism that outlines governance procedures over a protocol treasury.
 
-This proposal does not address how such a treasury would get populated. Donations, grants, and additional mechanims can be used to populate the treasury. A [separate LIP](https://github.com/dob/LIPs/blob/dob/delta/LIPs/LIP-treasury_contribution_percentage.md) lays out one such method which describes automatic treasury contributions from protocol inflation. This LIP could be passed independent of that proposal.
+This proposal does not address how such a treasury would get populated. Donations, grants, and additional mechanims can be used to populate the treasury. A [separate LIP 92](https://github.com/livepeer/LIPs/blob/master/LIPs/LIP-92.md) lays out one such method which describes automatic treasury contributions from protocol inflation. This LIP could be passed independent of that proposal.
 
 Two characteristics which were motivators for this proposal were:
 
