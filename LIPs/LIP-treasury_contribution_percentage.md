@@ -6,7 +6,7 @@ type: Standard Track
 status: Draft
 created: 2023-06-14
 discussions-to: https://forum.livepeer.org/t/lip-treasury-contribution-percentage-discussion-thread/2116
-requires: https://github.com/dob/LIPs/blob/dob/delta/LIPs/LIP-treasury_bundle.md
+requires: https://github.com/livepeer/LIPs/blob/master/LIPs/LIP-91.md
 ---
 
 ## Abstract
@@ -28,7 +28,7 @@ While additional methods of funding public goods are available, such as philanth
 
 ### Background and Requirements
 
-This proposal requires [LIP-livepeer_treasury](https://github.com/dob/LIPs/blob/dob/delta/LIPs/LIP-livepeer_treasury.md) to have passed in order to be enabled. For the purposes of this LIP, we'll assume "The Livepeer Treasury" refers to the onchain treasury deployed as part of the above LIP.
+This proposal requires [LIP-91](https://github.com/livepeer/LIPs/blob/master/LIPs/LIP-91.md) to have passed in order to be enabled. For the purposes of this LIP, we'll assume "The Livepeer Treasury" refers to the onchain treasury deployed as part of the above LIP.
 
 ### New Protocol Parameters
 
