@@ -1,5 +1,5 @@
 ---
-lip: treasury_contribution_percentage
+lip: 92
 title: Treasury Contribution Percentage
 author: Doug Petkanics (@dob), Victor Elias (@victorges)
 type: Standard Track
