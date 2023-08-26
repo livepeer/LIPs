@@ -2,32 +2,38 @@
 
 The governor implementation will leverage the [Governance primitives from OpenZeppelin](https://docs.openzeppelin.com/contracts/4.x/api/governance) and consist of the following new contracts:
 
-- `BondingCheckpoints`: manages checkpoints of the bonding state to provide historical voting power calculation.
-- `BondingCheckpointsVotes`: wraps the `BondingCheckpoints` above as an [`IERC5805Upgradeable`](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/interfaces/IERC5805Upgradeable.sol) used by the OpenZeppelin extensions.
-- `Treasury`: holds all funds and executes proposals, inherits from [TimelockControllerUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/TimelockControllerUpgradeable.sol) (OpenZeppelin) to allow enforcing delays in proposals execution.
+- `BondingVotes`: manages checkpoints of the bonding state to provide historical voting power calculation as an [`IERC5805Upgradeable`](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/interfaces/IERC5805Upgradeable.sol).
+- `Treasury`: holds all funds and executes proposals. Inherits from [TimelockControllerUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/TimelockControllerUpgradeable.sol) (OpenZeppelin) to allow enforcing delays in proposals execution.
 - `LivepeerGovernor`: Owns the treasury and manages creating, voting and executing proposals.
+
+It also involves changes in the following existing contracts:
+- `BondingManager`: Add checkpointing of bonding state to `BondingVotes` on every mutation.
 
 # Definitions
 
-This proposal was designed to be as similar as possible to the protocol governance system defined in [LIP-16](https://github.com/livepeer/LIPs/blob/652514a41c4aa1d30f348ae2fde0efaf28368ced/LIPs/LIP-16.md#definitions), which describes a partially off-chain voting system for managing proposals. There are many common concepts to re-use, some of which were renamed in this LIP only to match the OpenZeppelin Governor abstractions and avoid any confusion.
+This proposal was designed to be as similar as possible to the protocol governance system defined in [LIP-16](https://github.com/livepeer/LIPs/blob/652514a41c4aa1d30f348ae2fde0efaf28368ced/LIPs/LIP-16.md#definitions), which describes a partially off-chain voting system through polls. There are many common concepts to re-use, some of which were renamed in this LIP only to match the OpenZeppelin Governor abstractions and avoid any confusion.
 
-Similarly to LIP-16, voting power is given to both active and inactive staked LPT. Delegators get their voting power for the amount of LPT they have delegated to another address, while orchestrators get it from all the stake that has been delegated to them (including self-delegated). A delegator is allowed to override the vote from their delegated orchestrator – corresponding to their own stake contribution – by also casting a vote on the proposal.
+Similarly to LIP-16, voting power is given to both active and inactive staked LPT. Delegators get their voting power for the amount of LPT they have delegated to another address, while transcoders get it from all the stake that has been delegated to them (including self-delegated). A delegator is allowed to override the vote from their delegated transcoder – corresponding to their own stake contribution – by also casting a vote on the proposal.
 
 Differently from LIP-16, the voting power and total supply used for calculating the outcome of a proposal comes from the voting period start round, not the end round. This is the default behavior in OpenZeppelin Governor abstractions and makes the whole voting process more consistent and predictable.
-
-## Terms
-
-- Active stake: stake delegated towards an active orchestrator, which is an orchestrator that is in the active set in the corresponding round.
-- Inactive stake: stake delegated towards an orchestrator that is not in the active set.
-- Pending stake: stake state that has been updated in the current round but will only be effective in the next round, including for voting power.
-- Quorum: The minimum percentage of voting power that needs to have casted votes in order for the result to be considered valid. The quorum is configured through 2 separate `quorumNumerator` and `quorumDenominator` parameters.
-- MUST (all uppercase): Any following condition should result in a transaction revert when broken.
 
 ## Components
 
 - `BONDING_MANAGER` the `BondingManager` contract.
 - `ROUNDS_MANAGER` the `RoundsManager` contract.
-- `POLL_CREATOR` the `PollCreator` contract.
+
+## Terms
+
+- Active stake: stake delegated towards an active transcoder, which is a transcoder that is in the active set in the corresponding round.
+- Inactive stake: stake delegated towards an transcoder that is not in the active set.
+- Pending stake: stake state that has been updated in the current round but will only be effective in the next round, including for voting power.
+- Quorum: The minimum percentage of voting power that needs to have casted votes in order for the result to be considered valid. The quorum is configured through 2 separate `quorumNumerator` and `quorumDenominator` parameters.
+- Opinionated vote: A vote that is not `Abstain`, thus expressing an opinion about the proposal outcome.
+- Quota: The minimum percentage of opinionated votes that need to approve a proposal in order for the proposal to be successful.
+- Transcoder: The term "transcoder" has been changed to "orchestrator" in the Livepeer off-chain communication. Here we use the original term that is in the protocol code instead to avoid confusion. You can interpret it as "orchestrator" anywhere it makes more sense.
+- Current round: The value returned by `ROUNDS_MANAGER.currentRound()`, which currently rules the protocol behavior over time like snapshotting bonding changes and generating inflationary rewards. The next or previous rounds can be calculated by adding or subtracting 1 to the current round.
+- Start of round: The start of the first block of a given round.
+- End of round: The end of the last block of a given round.
 
 # Parameters
 
@@ -35,7 +41,7 @@ Differently from LIP-16, the voting power and total supply used for calculating 
 
 These parameters are constants in the code that need a contract upgrade to be changed.
 
-- `QUOTA:` The minimum percentage of votes that need to approve a proposal in order for the proposal to be successful.
+- `quota:` The minimum percentage of opinionated votes that need to approve a proposal in order for the proposal to be successful.
     - Value: `500000` (same as LIP-16’s `QUOTA`)
     - This value represents a 50% quota in 6-digit decimal precision.
 - `quorumDenominator`: The denominator to divide the `quorumNumerator` below to find the effective quorum percentage.
@@ -49,7 +55,7 @@ The value of these parameters can be changed by the community through regular go
 - `quorumNumerator`: The numerator to be divided the `quorumDenominator` above to find the effective quorum percentage.
     - Initial value: `333300` (same as LIP-16’s `QUORUM`)
     - This value represents a 33.33% quorum.
-    - It comes from OpenZeppelin’s [`GovernorVotesQuorumFractionUpgradeable`](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/extensions/GovernorVotesQuorumFractionUpgradeable.sol) directly, contrasted with the `quorumDenominator` that has a fixed value in the code corresponding to our 6 decimal places precision.
+    - Its implementation comes from OpenZeppelin’s [`GovernorVotesQuorumFractionUpgradeable`](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/extensions/GovernorVotesQuorumFractionUpgradeable.sol) directly, contrasted with the `quorumDenominator` that has a fixed value in the code corresponding to our 6 decimal places precision.
 - `votingDelay`: Delay in rounds since the proposal is submitted until voting starts.
     - Initial value: `1`
     - This value represents an effective delay of 1 to 2 times the round duration.
@@ -69,17 +75,14 @@ The value of these parameters can be changed by the community through regular go
     - This delay is also not configurable per proposal, even though it is called minimum delay. It could be implemented on our side through a contract upgrade in the future.
 
 # Contracts Details
+## BondingManager
+// TODO: Detail BondingManager changes
+- fix the checkpointed state of any account that may have diverged because of some bug or unthought corner case.
 
-## BondingCheckpoints
+## BondingVotes
 
 ```solidity
-contract BondingCheckpoints is IERC6372Upgradeable {
-    // IERC6372Upgradeable
-
-    function clock() public view returns (uint48);
-
-    function CLOCK_MODE() public pure returns (string memory);
-
+contract BondingCheckpoints {
     // Checkpointing State
 
     function checkpointBondingState(
@@ -104,68 +107,20 @@ contract BondingCheckpoints is IERC6372Upgradeable {
         external
         view
         returns (uint256 amount, address delegateAddress);
-}
-```
 
-### IERC6372Upgradeable
+    // ERC-20 metadata
 
-This is the OpenZeppelin interface for a contract to specify their internal clock. In the case of the `Governor` abstractions this is used for enforcing proposals delays, voting periods. It is not used for timelock delays since the `TimelockController` contract does not allow a clock to be specified, but rather always uses block numbers.
+    function name() external view returns (string memory);
 
-- `clock`
-    - Should return `ROUNDS_MANAGER.currentRound()`
-- `CLOCK_MODE`
-    - Should return `"mode=livepeer_round"`
+    function symbol() external view returns (string memory);
 
-### Checkpointing State
+    function decimals() external view returns (uint8);
 
-All functions described MUST be callable only by the `BONDING_MANAGER`.
+    // ERC-5805
 
-- `checkpointBondingState`
-    - This checkpoints fields from the `Delegator` or `Transcoder` structs from `BONDING_MANAGER`.
-    - It MUST be called on every place where the `BondingManager` changes a delegator or transcoder state to checkpoint the state for the respective `_address` in a point in time.
-    - The `_startRound` is required to be up to the next round, considering that the future state is only known up to the next round. In practice it is always the next round though, since any stake changes are only actually active on the following round.
-    - All the other parameters come directly from the corresponding fields in the checkpointed structs about the given address.
-- `checkpointTotalActiveStake`
-    - This checkpoints the total active stake for a given round.
-    - It MUST be called for every round since its value continually changes at least from the inflation rewards accrual.
-    - It should be called from `BONDING_MANAGER.setCurrentRoundTotalActiveStake()` which is currently already called from `ROUNDS_MANAGER.initializeRound()`.
-    - The `_startRound` is required to be up to the current round. In practice it is always called with the current round, which is the round being initialized.
-    - Since every round has to be initialized for the protocol to work properly, there is a guarantee that it’ll build the extensive history of this value.
-
-### State Lookup
-
-The checkpointed state should be consistent with the stake at the start of the specified round. Any stake updated during the round (pending stake) should not affect the checkpoint of that round since they are only effective on the next one.
-
-- `getTotalActiveStakeAt`
-    - Returns the total active stake at the specified `_round`.
-    - The `_round` argument:
-        - It MUST be lower or equal to `ROUNDS_MANAGER.currentRound()`
-        - The corresponding round MUST have been initialized. The implementation should differentiate when the round hadn’t been initialized and when the total stake was `0` at the time. It should only revert when the round wasn’t initialized.
-- `hasCheckpoint`
-    - Returns whether the provided `_account` has any checkpoint already registered.
-    - This is mostly a utility for an initialization script after the first deploy, to make sure to checkpoint each account initial state only once.
-- `getBondingStateAt`
-    - Returns the checkpointed bonding state of an `_account` in the specified `_round`.
-    - The returned `delegateAddress` is the address that the delegator was bonding their stake to. In the case of transcoders this MUST always be its own address (self-delegation).
-        - The result MUST be exactly the same as the `delegateAddress` that would have been returned by `BONDING_MANAGER.getDelegator(_account)` at the **start** of the `_round`.
-    - The returned `amount` has a different behavior depending on if the address is a transcoder or a delegator.
-        - For transcoders, it MUST match the result of calling `BONDING_MANAGER.transcoderTotalStake(_account)` at the **start** of the `_round`.
-        - For delegators, it MUST match the result of calling `bondingManager.pendingStake(_account, 0)` at the **start** of the `_round`.
-
-## BondingCheckpointsVotes
-
-This contract is merely an intermediary for the `BondingCheckpoints` contract. It translates abstractions from Livepeer’s bonding to voting power ERC-5805. The only 2 differences from `IERC5805Upgradeable` are:
-
-- It does not implement the mutation functions `delegate` and `delegateBySig`. Instead, the delegation state come directly from `BONDING_MANAGER`.
-- It implements an additional `delegatedAt` abstraction since our custom vote counting module will need access to that in order to allow delegators to override their transcoders votes.
-
-It is a non-upgradeable contract in order to have a fixed address. This is useful so its address can be passed directly to the OpenZeppelin extensions that hold a static reference to it.
-
-### Interface
-
-```solidity
-contract BondingCheckpointsVotes is Manager, IVotes {
-    // IVotes
+    event DelegateChanged(address indexed delegator, address indexed fromDelegate, address indexed toDelegate);
+    event DelegateVotesChanged(address indexed delegate, uint256 previousBalance, uint256 newBalance);
+    event DelegatorBondedAmountChanged(address indexed delegate, uint256 previousBalance, uint256 newBalance); // extension
 
     function clock() public view returns (uint48);
 
@@ -175,60 +130,145 @@ contract BondingCheckpointsVotes is Manager, IVotes {
 
     function getPastVotes(address _account, uint256 _round) external view returns (uint256);
 
+    function totalSupply() external view returns (uint256); // extension
+
     function getPastTotalSupply(uint256 _round) external view returns (uint256);
 
     function delegates(address _round) external view returns (address);
 
-    function delegatedAt(address _account, uint256 _round) public view returns (address);
+    function delegatedAt(address _account, uint256 _round) public view returns (address); // extension
 
     function delegate(address) external pure;
 
-    function delegateBySig(
-        address,
-        uint256,
-        uint256,
-        uint8,
-        bytes32,
-        bytes32
-    ) external pure;
+    function delegateBySig(address,uint256,uint256,uint8,bytes32,bytes32) external pure;
 }
 ```
 
-These functions are basically proxies to the corresponding `BondingCheckpoints` ones. The mappings are:
+### Checkpointing State
+
+All functions described must be callable only by the `BONDING_MANAGER`, reverting if called by anyone else.
+
+- `checkpointBondingState`
+    - This checkpoints fields from the `Delegator` or `Transcoder` structs from `BONDING_MANAGER`.
+    - It should be called on every place where the `BondingManager` changes a delegator or transcoder state to checkpoint the state for the respective `_address` in a point in time.
+    - The `_startRound` is required to match the next round, as the BondingManager can only change the active stake on the next round. The function should revert otherwise.
+    - All the other parameters come directly from the corresponding fields in the checkpointed structs about the given address.
+    - It should emit the correspoinding events when appropriate:
+        - `DelegateChanged` when the `delegateAddress` is different from the last checkpoint.
+        - `DelegateVotesChanged` when the `delegatedAmount` is different from the last checkpoint. If the account is not a transcoder (is not self-delegating), its effective `delegatedAmount` is `0`.
+        - `DelegatorBondedAmountChanged` when the `bondedAmount` is different from the last checkpoint.
+- `checkpointTotalActiveStake`
+    - This checkpoints the total active stake for a given round.
+    - It should be called for every round since its value continually changes at least from the inflation rewards accrual.
+    - It should be called from `BONDING_MANAGER.setCurrentRoundTotalActiveStake()` which is currently already called from `ROUNDS_MANAGER.initializeRound()`.
+    - The `_startRound` is required to be the current round, reverting otherwise.
+
+### State Lookup
+
+The checkpointed state should be consistent with the stake at the start of the specified round. Any stake updated during the round (pending stake) should not affect the checkpoint of that round since they are only effective on the next one.
+
+- `getTotalActiveStakeAt`
+    - Returns the total active stake at the beginning of the specified `_round`.
+    - It should revert if `_round` argument is not lower or equal to `ROUNDS_MANAGER.currentRound() + 1`.
+    - There are 4 possibilities regarding existing checkpoints that change the behavior of this function:
+        - There are no total stake checkpoints, or the first one is after the searched `_round`: should return 0.
+        - There is a checkpoint for the specific `_round`: should return that checkpointed total active stake.
+        - There is no exact checkpoint for the `_round`, but there are checkpoints before and after it: return the first checkpointed value **after** the searched `_round`.
+            - The rationale for this is that the `BONDING_MANAGER.nextRoundTotalActiveStake()` will stay frozen until the next round is initialized, so the effective total active stake for the uncheckpointed round (consistent with the individual accounts checkpoints) will be the same as the next round to be initialized after it.
+        - There is no exact checkpoint for the `_round`, but there are checkpoints before it: return `BONDING_MANAGER.nextRoundTotalActiveStake()`
+            - The rationale for consistency here is the same as above. This solves for the case of querying the total stake in the current round before it is initialized or querying for the next round. The latter is required when returning the current total supply of votes, asquery 1 round ahead for voting power.
+- `hasCheckpoint`
+    - Returns whether the provided `_account` has any checkpoint already registered.
+    - This is a utility to help initialize an account checkpoint on the first deployment of this checkpointing system. The protocol explorer will allow users to initialize their bonding checkpoints as a "Register to Vote" call to action.
+- `getBondingStateAt`
+    - Returns the active stake and delegate of an `_account` in the specified `_round`, calculated using the checkpoint with the highest `startRound` lower or equal to the `_round`.
+    - If there are no checkpoints for the `_account` or the lowest checkpoint `startRound` is after the searched `_round`, a zero `delegateAddress` and `amount` should be returned.
+    - The returned `delegateAddress` is the address that the `_account` was bonding their stake to on the beginning of that `_round`.
+        - In the case of transcoders, this must always be their own address due to self-delegation.
+        - The result must be exactly the same as the `delegateAddress` that would have been returned by `BONDING_MANAGER.getDelegator(_account)` at the **start** of the `_round`.
+    - The returned `amount` has a different behavior depending on if the address is a transcoder (delegate) or a delegator:
+        - For transcoders:
+            - It should be the value of `delegatedAmount` from the last checkpoint to have been made with a `startRound` lower or equal to the searched `_round`.
+            - It must match the result of calling `BONDING_MANAGER.transcoderTotalStake(_account)` at the **start** of the `_round`.
+        - For delegators:
+            - It should be the value of the delegator stake at the **start** of the `_round`. This should be calcualted from the `bondedAmount` from the last checkpoint to have been made with a `startRound` lower or equal to the searched `_round`, including pending stake rewards as defined in [LIP-36](https://github.com/livepeer/LIPs/blob/master/LIPs/LIP-36.md)
+            - It must match the result of calling `bondingManager.pendingStake(_account, 0)` at the **start** of the `_round`.
+
+### ERC-20 Metadata
+
+This implements the optional ERC-20 metadata methods, which is not required for the on-chain governor framework to function but improves interoperability with existing tools like [Tally](tally.xyz). The contract returns different metadata from the token itself though to avoid any ambiguity.
+
+- `name`
+    - Returns `"Livepeer Voting Power"`
+- `symbol`
+    - Returns `"vLPT"`
+- `decimals`
+    - Returns `18`
+
+### ERC-5805
+
+[ERC-5805](https://eips.ethereum.org/EIPS/eip-5805)  specifies how to express voting power with checkpointing and delegation mechanisms. The interface provided by OpenZeppelin and required by the Governor framework is `IERC5805Upgradeable`, which is based on ERC-5805 but adds or remove a couple methods from it. The `BondingVotes` implementation described here is not fully compliant with these specifications, explained in the Caveats section. Some additional functions were also added as they were required for the rest of the Governor implementation or overall utility of the contract.
+
+The implementation of these interface functions should forward the calls to the lower-level active stake checkpoint functions above. A caveat being that the ERC5805 functions access the stake from the next round when querying for a given round. This is because ERC5805 defines the voting power of an account at timepoint `t` to be the delegated balances when `clock` _overtook_ `t`. In our case this means thatwant the stake of an account at the **end** of the round, instead of at the **start** which is provided by the checkpoint functions. So when querying for the votes at round `r`, these functions actually return the active stake at round `r+1`.
 
 - `clock`
-    - `BondingCheckpoints.clock()`
+    - Returns `ROUNDS_MANAGER.currentRound()`
 - `CLOCK_MODE`
-    - `BondingCheckpoints.CLOCK_MODE()`
+    - Returns `"mode=livepeer_round"`
 - `getVotes(_account)`
-    - `amount` value from `BondingCheckpoints.getBondingAt(_account, BondingCheckpoints.clock())`
+    - Returns `amount` value from `getBondingStateAt(_account, clock() + 1)`
 - `getPastVotes(_account, _round)`
-    - `amount` value from `BondingCheckpoints.getBondingAt(_account, _round)`
+    - Returns `amount` value from `getBondingStateAt(_account, _round + 1)`
 - `getPastTotalSupply(_round)`
-    - `BondingCheckpoints.getTotalActiveStakeAt(_round)`
+    - Extension of ERC-5805 by OpenZeppelin's `IERC5805Upgradeable`.
+    - Returns `getTotalActiveStakeAt(_round + 1)`
+- `totalSupply()`
+    - Extension of `IERC5805Upgradeable` to allow accessing current total supply. Matches signature of ERC-20's `totalSupply`.
+    - Returns `getTotalActiveStakeAt(clock() + 1)`
 - `delegates(_account)`
-    - `delegateAddress` value from `BondingCheckpoints.getBondingAt(_account, BondingCheckpoints.clock())`
+    - Returns `delegateAddress` value from `getBondingStateAt(_account, clock() + 1)`
 - `delegatedAt(_account, _round)`
-    - `delegateAddress` value from `BondingCheckpoints.getBondingAt(_account, _round)`
-- `delegates`
-    - Reverts with `"use BondingManager to update vote delegation through bonding"`
+    - Extension of ERC-5805 for the custom vote counting module to allow delegators to override their transcoders votes consistently at `proposalSnapshot` round.
+    - Returns `delegateAddress` value from `getBondingStateAt(_account, _round + 1)`
+- `delegate`
+    - Reverts with `MustCallBondingManager("bond")`
 - `delegateBySig`
-    - Reverts with `"use BondingManager to update vote delegation through bonding"`
+    - Reverts with `MustCallBondingManager("bondFor")`
 
-> A caveat is that `getPastVotes` returns voting power for any delegated stake (active and inactive), while `getPastTotalSupply` returns only the total **active** stake for the total supply. This can be a problem for any logic that expects that the total active stake is actually the sum of all total supply. In this implementation it is only used to calculate the quorum, so it keeps the same behavior as the existing governance system described in LIP-16.
+#### Caveats
+
+The known divergences from the `ERC5805` and `IERC5805Upgradeable` expectations are:
+- It does not implement the mutation functions `delegate` and `delegateBySig`. Instead it reverts as detailed above.
+- There is no implementation for the `nonces` function asdon't support the `delegateBySig` either.
+- It implements an additional `delegatedAt` abstraction since the custom vote counting module will need that in order to allow delegators to override their transcoders votes.
+- It does not adhere to the invariant that `getPastTotalSupply` matches the sum of all the account's `getPastVotes` in a round (similarly for `totalSupply` and `getVotes`). Instead, it maintains the same behaviors as the existing governance polling system described in LIP-16:
+    - It derives the `totalSupply` from the `BONDING_MANAGER.currentRoundTotalActiveStake` – which only considers the active stake, bonded to the top 100 transcoders – while individual account votes come from the bonding checkpoints and provide voting power to all delegated stake – even if not to the top 100.
+    - It provides voting power to delegators as well as transcoders. Note that is not an actual inconsistency when counting proposal votes, because the custom counting module below implements the overriding system where a delegator is only able to change their part of their delegate's vote, not add more votes to the total.
+- It has a partial implementation of the events specified in ERC-5805. Meaning that voting power indexed from the `DelegateVotesChanged` event is not sufficient to determine the voting power of all accounts. This is because of:
+    - The fact that we provide voting power to delegators as well as transcoders, as described above, so the indexed events will miss the voting power from the delegators.
+    - The fact that voting power follows the logic defined in [LIP-36](https://github.com/livepeer/LIPs/blob/master/LIPs/LIP-36.md), meaning it grows automatically over every round. So any event processor would need a custom implementation of the pending rewards of a delegator.
+    - That is the nature of the `DelegatorBondedAmountChanged` event that could be used from a custom indexer to replicate [LIP-36](https://github.com/livepeer/LIPs/blob/master/LIPs/LIP-36.md) from the event data.
 
 ## GovernorCountingOverridable (extension)
 
 This `Governor` extension complements `BondingCheckpointsVotes` with the vote counting logic, accessing it through the `IVotes` interface. The combination of the 2 of them was molded to be as similar as possible to the off-chain indexer logic described in LIP-16.
 
-The counting module implements specifically the tallying logic, whose only difference from the regular OpenZeppelin implementation is that it allows not only the delegate address (transcoder) to vote, but also the delegator themselves. When a delegator makes a vote, they should override their portion of the transcoder vote.
+The counting module implements specifically the tallying logic, whose only difference from the `GovernorCountingSimpleUpgradeable` from OpenZeppelin implementation is that it counts all vote types for quorum and allows not only the delegate (transcoder) to vote, but also the delegator themselves. When a delegator makes a vote though, they only override their portion of their transcoder's vote.
 
 ```solidity
 interface IVotes is IERC5805Upgradeable {
-    function delegatedAt(address delegatee, uint256 timepoint) external returns (address);
+    function name() external view returns (string memory);
+    function symbol() external view returns (string memory);
+    function decimals() external view returns (uint8);
+    function totalSupply() external view returns (uint256);
+    function delegatedAt(address account, uint256 timepoint) external returns (address);
 }
 
 abstract contract GovernorCountingOverridable is Initializable, GovernorUpgradeable {
+    function __GovernorCountingOverridable_init(uint256 _quota) internal;
+
+    function quota() public view (uint256);
+
     function COUNTING_MODE() public pure virtual returns (string memory);
 
     function hasVoted(uint256 _proposalId, address _account) public view virtual returns (bool);
@@ -256,13 +296,17 @@ abstract contract GovernorCountingOverridable is Initializable, GovernorUpgradea
     ) internal virtual override;
 
     function votes() public view virtual returns (IVotes); // abstract
-
-    function quota() public view virtual returns (uint256); // abstract
 }
 ```
 
-The 2 abstract functions should be implemented by inheritors, providing integration pieces for this extension to function. They are mentioned in the specifications below when relevant.
+The `votes` abstract function is to be implemented by the concrete `LivepeerGovernor` and provides the contract to use for voting power. It is mentioned in the specifications below when relevant. Most of the functions here are required for a counting module in the Governor framework and should follow their spec.
 
+- `__GovernorCountingOverridable_init(_quota)`:
+    - Initializes the module with the provided `_quota`.
+    - Expressed in 6-digit decimal precision compatible with the protocol's `MathUtils`.
+- `quota`:
+    - Returns the configured quota value for vote succeeded calculation.
+    - Notice that this value is only configurable on the initialization of the Governor, but is not currently updatable. That can be done in a future upgrade by introducing a similar checkpointing system as `GovernorVotesQuorumFractionUpgradeable`.
 - `COUNTING_MODE`
     - Should return `"support=bravo&quorum=for,abstain,against”`
 - `hasVoted(_proposalId, _account)`
@@ -276,44 +320,44 @@ The 2 abstract functions should be implemented by inheritors, providing integrat
     - The result should be equivalent to: `For + Abstain + Against >= quorum()`
 - `_voteSucceeded(_proposald)`
     - Should return if the voting resulted in an approval of the proposal.
-    - It should grab the quota percentage from the `quota()` virtual function, implemented by the contract that inherits from this.
-    - It should consider only the `For` and `Against` votes when calculating the result.
-    - The result should be equivalent to: `For >= (For + Against) * quota()`
+    - It should grab the quota percentage from the configured `quota` variable, represented as a 6-digit decimal fraction. Multiplication is implemented by the `MathUtils.percOf` function.
+    - It should consider only the `For` and `Against` votes when calculating the result, as `Abstain` votes should not influence on the result side.
+    - The result should be equivalent to: `For >= (For + Against) * quota`
 - `_countVote`
-    - Implements the `Governor` virtual function called whenever a vote is cast on a proposal. This is where the actual “override” logic is implemented, using the `votes()` virtual function to access voting power and delegation state at the time of the voting start.
-    - The term “vote type count” is used to refer to the values returned by `proposalVotes` above for the vote type corresponding to the casted vote.
-    - There are a couple different outcomes to expect from it:
+    - Implements the `Governor` virtual function called whenever a vote is cast on a proposal. This is where the “override” logic is implemented, using the provided `votes()` contract to access voting power and delegation state at the `proposalSnapshot` round.
+    - The term “vote type count” is used to refer to the values returned by `proposalVotes` corresponding to the type of the casted vote.
+    - There are a couple different outcomes to expect from this function:
         - **Transcoder votes first:** the vote type count should increase by the transcoder’s voting power.
         - **Delegator(s) votes first:** the vote type count should increase by the delegator’s voting power.
         - **Delegator(s) vote after their Transcoder:** the vote type count should increase by the delegator’s voting power, while at the same time decreasing the same amount from the vote type count that the Transcoder had cast.
-        - **Transcoder vote after their Delegator(s):** the vote type count should increase by the transcoder’s voting power minus the sum of the voting power from all its delegators.
+        - **Transcoder vote after their Delegator(s):** the vote type count should increase by the transcoder’s voting power minus the sum of the voting power from all its delegators that have already made their vote.
 
 ## Treasury
 
 This custom contract exists only to be able to instantiate the `TimelockControllerUpgradeable` contract from OpenZeppelin. It provides no functionality but a public `initialize` function that can be used to initialize the timelock. Its interface is
-exactly the same as `TimelockControllerUpgradeable` so we will avoid detailing it here.
+exactly the same as `TimelockControllerUpgradeable`, so it won't be detailed here.
 
-The `TimelockControllerUpgradeable` roles should be configured as:
-- `TIMELOCK_ADMIN_ROLE`: Only the Timelock controller itself should have this role, meaning administration (role updates) has to be done through the timelock itself (i.e. proposals). The enforced minimum delay is only updatable from the timelock regardless of this.
-- `PROPOSER_ROLE`: Only the `LivepeerGovernor` should have this role, meaning any action from the treasury has to be proposed through the governor. Not that anyone with 100 LPT can start a proposal through the Governor, but only the Governor can "propose" (`schedule()`) the execution of those proposals on the treasury Timelock.
-- `EXECUTOR_ROLE`: Only the `LivepeerGovernor` has this role as well, as it needs to update its internal state when a proposal is executed. Its own `execute()` function can be called by anyone.
-- `CANCELLER_ROLE`: Also only given to the `LivepeerGovernor`, even though it is unused in the current implementation. It could be considered giving this role to other agents like the current protocol governor or a security committee, but it will only be useful if we set a non-zero timelock delay.
+In the production deployments, the `TimelockControllerUpgradeable` roles should be configured as:
+- `TIMELOCK_ADMIN_ROLE`: Only the Timelock controller itself should have this role, meaning administration (updating roles) has to be done through the timelock itself (i.e. proposals). The enforced minimum delay is only updatable from the timelock regardless of this.
+- `PROPOSER_ROLE`: Only the `LivepeerGovernor` should have this role, as it enqueues functions for execution which should only be used for executing a successful proposal from the `LivepeerGovernor` contract.
+- `EXECUTOR_ROLE`: Only the `LivepeerGovernor` should have this role as well, as it needs to update its internal state when a proposal is executed. Its own `execute()` function can be called by anyone.
+- `CANCELLER_ROLE`: Also only given to the `LivepeerGovernor`, even though it is unused in the current implementation. It could be considered giving this role to other agents like the current protocol governor or a security committee, but it will only be useful if a non-zero timelock delay is configured as well.
 
 ## LivepeerGovernor
 
 The `LivepeerGovernor` contract is the main contract and plugs all the other pieces together for the on-chain governance solution. It inherits from the following non-functional contracts:
 
-- `ManagerProxyTarget`: Supports contract upgradability. This is easier than using OpenZeppelin’s proxy as it integrates with the rest of the protocol contracts natively.
-- `Initializable`: Provides initialization abstractions for proxied contracts.
+- `ManagerProxyTarget`: Supports contract upgradability consistent with the rest of the protocol contracts.
+- [Initializable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/master/contracts/proxy/utils/Initializable.sol) (OpenZeppelin): Provides initialization abstractions for proxied contracts.
 
 It also inherits from the following functional contracts:
 
 - [GovernorUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/GovernorUpgradeable.sol) (OpenZeppelin): Core OpenZeppelin governance contract.
-- [GovernorSettingsUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/extensions/GovernorSettingsUpgradeable.sol) (OpenZeppelin): Manages updatable parameters without requiring an upgrade.
-- [GovernorTimelockControlUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/extensions/GovernorTimelockControlUpgradeable.sol) (OpenZeppelin): Integrates `TimelockController` for delayed proposal execution.
-- [GovernorVotesUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/extensions/GovernorVotesUpgradeable.sol) (OpenZeppelin): Votes module that extracts voting weight from an [`IERC5805Upgradeable`](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/interfaces/IERC5805Upgradeable.sol) (implemented by `BondingCheckpointsVotes`).
+- [GovernorSettingsUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/extensions/GovernorSettingsUpgradeable.sol) (OpenZeppelin): Manages a couple updatable parameters without requiring an upgrade.
+- [GovernorTimelockControlUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/extensions/GovernorTimelockControlUpgradeable.sol) (OpenZeppelin): Integrates a `TimelockController` (the `Treasury` above) for delayed proposal execution.
+- [GovernorVotesUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/extensions/GovernorVotesUpgradeable.sol) (OpenZeppelin): Votes module that extracts voting weight from an [`IERC5805Upgradeable`](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/interfaces/IERC5805Upgradeable.sol) (implemented by `BondingVotes`).
 - [GovernorVotesQuorumFractionUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/bc95521e34dcd49792065e264a7ad2b5a86f0091/contracts/governance/extensions/GovernorVotesQuorumFractionUpgradeable.sol) (OpenZeppelin): Manages an updatable quorum parameter without requiring an upgrade.
-- `GovernorCountingOverridable`: Custom implementation for the `Governor` Counting module to allow delegators to override their delegated orchestrator votes.
+- `GovernorCountingOverridable`: Custom implementation for the governor counting module to allow delegators to override their delegated transcoder votes.
 
 Notice that most of the functions from the governor come from OpenZeppelin, either the main `GovernorUpgradeable` or extensions. Their interface is omitted for simplicity and this includes only the overridden methods. The only custom extension is the `GovernorCountingOverridable` which will be described afterwards.
 
