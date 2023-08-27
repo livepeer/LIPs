@@ -1,4 +1,11 @@
-# Treasury LIP Technical Specification
+---
+title: LIP-89 – Technical Specification
+author: Victor Elias (@victorges)
+created: 2023-06-22
+part-of: 89
+---
+
+# Intro
 
 The governor implementation will leverage the [Governance primitives from OpenZeppelin](https://docs.openzeppelin.com/contracts/4.x/api/governance) and consist of the following new contracts:
 
@@ -117,8 +124,7 @@ The checkpoint can also be verified through the ERC-5805 events emited from `Bon
 - `slashTranscoder`
 
 
-### Interface changes
-There is also a new external function created on the contract, specified below:
+### Interface additions
 
 ```solidity
 contract BondingManager {
