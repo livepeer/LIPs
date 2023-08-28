@@ -33,7 +33,7 @@ Differently from LIP-16, the voting power and total supply used for calculating 
 ## Terms
 
 - Active stake: stake delegated towards an active transcoder, which is a transcoder that is in the active set in the corresponding round.
-- Inactive stake: stake delegated towards an transcoder that is not in the active set.
+- Inactive stake: stake delegated towards a transcoder that is not in the active set.
 - Pending stake: stake state that has been updated in the current round but will only be effective in the next round, including for voting power.
 - Quorum: The minimum percentage of voting power that needs to have casted votes in order for the result to be considered valid. The quorum is configured through 2 separate `quorumNumerator` and `quorumDenominator` parameters.
 - Opinionated vote: A vote that is not `Abstain`, thus expressing an opinion about the proposal outcome.
@@ -85,13 +85,15 @@ The value of these parameters can be changed by the community through regular go
 # Contracts Details
 
 ## BondingManager
+
 ### Checkpointing Total Active Stake
 
 To checkpoint the total active stake of every round, the `ROUNDS_MANAGER.initializeRound()` can be used to indirectly checkpoint the total active stake for the protocol on that round. To do that, the `setCurrentRoundTotalActiveStake` function from `BondingManager` needs to call the `BondingVotes` contract to checkpoint that value in time.
 
 After `setCurrentRoundTotalActiveStake` is called in round `r`, the expectation is that:
- - `BondingVotes.totalSupply()` returns exactly `BONDING_MANAGER.currentRoundTotalActiveStake()` during the same round
- - `BondingVotes.getPastTotalSupply(r)` will immutably return the same value above in the future.
+
+- `BondingVotes.totalSupply()` returns exactly `BONDING_MANAGER.currentRoundTotalActiveStake()` during the same round
+- `BondingVotes.getPastTotalSupply(r)` will immutably return the same value above in the future.
 
 ### Checkpointing Bonding State
 
@@ -101,7 +103,7 @@ In practical terms, it can be defined that after any write function called on th
 
 - The message sender.
 - Any addresses sent as arguments.
-- If any of the above is a delegator, their transcoder.
+- If any of the above is a delegator, their transcoder if it has at least 1 checkpoint.
 - If any of the above is a transcoder, all their delegators with at least 1 checkpoint.
 
 The expectation is that after mutating any involved account:
@@ -123,7 +125,6 @@ The checkpoint can also be verified through the ERC-5805 events emited from `Bon
 - `updateTranscoderWithFees`
 - `slashTranscoder`
 
-
 ### Interface additions
 
 ```solidity
@@ -136,6 +137,7 @@ contract BondingManager {
   - Explicitly checkpoints an account bonding state in the `BondingVotes` contract. This can be used to fix the checkpointed state of any account that may have diverged unexpectedly.
   - It can also be used on the initial deploy of these new contracts, to initialize the previously uncheckpointed state on the `BondingVotes` contract. Initializing your checkpoint can be seen as registering to vote.
   - After it runs, `BondingVotes.getVotes(_account)` should be initialized and match the current state of the account.
+  - Notice that a delegator is only fully checkpointed once their transcoder (delegate) also is. When calling this function to initialize state, one must make sure to checkpoint a delegator's transcoder as well.
 
 ## BondingVotes
 
@@ -219,14 +221,14 @@ All functions described must be callable only by the `BONDING_MANAGER`, revertin
   - This checkpoints the total active stake for a given round.
   - It should be called for every round since its value continually changes at least from the inflation rewards accrual.
   - It should be called from `BONDING_MANAGER.setCurrentRoundTotalActiveStake()` which is currently already called from `ROUNDS_MANAGER.initializeRound()`.
-  - The `_startRound` is required to be the current round, reverting otherwise.
+  - The `_round` is required to be the current round, reverting otherwise.
 
 ### State Lookup
 
 The checkpointed state should be consistent with the stake at the start of the specified round. Any stake updated during the round (pending stake) should not affect the checkpoint of that round since they are only effective on the next one.
 
 - `getTotalActiveStakeAt`
-  - Returns the total active stake at the beginning of the specified `_round`.
+  - Returns the total active stake at the start of the specified `_round`.
   - It should revert if `_round` argument is not lower or equal to `ROUNDS_MANAGER.currentRound() + 1`.
   - There are 4 possibilities regarding existing checkpoints that change the behavior of this function:
     - There are no total stake checkpoints, or the first one is after the searched `_round`: should return 0.
@@ -234,14 +236,14 @@ The checkpointed state should be consistent with the stake at the start of the s
     - There is no exact checkpoint for the `_round`, but there are checkpoints before and after it: return the first checkpointed value **after** the searched `_round`.
       - The rationale for this is that the `BONDING_MANAGER.nextRoundTotalActiveStake()` will stay frozen until the next round is initialized, so the effective total active stake for the uncheckpointed round (consistent with the individual accounts checkpoints) will be the same as the next round to be initialized after it.
     - There is no exact checkpoint for the `_round`, but there are checkpoints before it: return `BONDING_MANAGER.nextRoundTotalActiveStake()`
-      - The rationale for consistency here is the same as above. This solves for the case of querying the total stake in the current round before it is initialized or querying for the next round. The latter is required when returning the current total supply of votes, asquery 1 round ahead for voting power.
+      - The rationale for consistency here is the same as above. This solves for the case of querying the total stake in the current round before it is initialized or querying for the next round. The latter is required when returning the current `totalSupply` of votes, as the voting power functions query 1 round ahead.
 - `hasCheckpoint`
   - Returns whether the provided `_account` has any checkpoint already registered.
   - This is a utility to help initialize an account checkpoint on the first deployment of this checkpointing system. The protocol explorer will allow users to initialize their bonding checkpoints as a "Register to Vote" call to action.
 - `getBondingStateAt`
   - Returns the active stake and delegate of an `_account` in the specified `_round`, calculated using the checkpoint with the highest `startRound` lower or equal to the `_round`.
   - If there are no checkpoints for the `_account` or the lowest checkpoint `startRound` is after the searched `_round`, a zero `delegateAddress` and `amount` should be returned.
-  - The returned `delegateAddress` is the address that the `_account` was bonding their stake to on the beginning of that `_round`.
+  - The returned `delegateAddress` is the address that the `_account` was bonding their stake to on the start of that `_round`.
     - In the case of transcoders, this must always be their own address due to self-delegation.
     - The result must be exactly the same as the `delegateAddress` that would have been returned by `BONDING_MANAGER.getDelegator(_account)` at the **start** of the `_round`.
   - The returned `amount` has a different behavior depending on if the address is a transcoder (delegate) or a delegator:
@@ -249,12 +251,12 @@ The checkpointed state should be consistent with the stake at the start of the s
       - It should be the value of `delegatedAmount` from the last checkpoint to have been made with a `startRound` lower or equal to the searched `_round`.
       - It must match the result of calling `BONDING_MANAGER.transcoderTotalStake(_account)` at the **start** of the `_round`.
     - For delegators:
-      - It should be the value of the delegator stake at the **start** of the `_round`. This should be calcualted from the `bondedAmount` from the last checkpoint to have been made with a `startRound` lower or equal to the searched `_round`, including pending stake rewards as defined in [LIP-36](https://github.com/livepeer/LIPs/blob/master/LIPs/LIP-36.md)
+      - It should be the value of the delegator stake at the **start** of the `_round`. This should be calculated from the `bondedAmount` of the last checkpoint with a `startRound` lower or equal to the searched `_round`, including pending stake rewards (as defined in [LIP-36](https://github.com/livepeer/LIPs/blob/master/LIPs/LIP-36.md)) until the searched `_round`.
       - It must match the result of calling `bondingManager.pendingStake(_account, 0)` at the **start** of the `_round`.
 
 ### ERC-20 Metadata
 
-This implements the optional ERC-20 metadata methods, which is not required for the on-chain governor framework to function but improves interoperability with existing tools like [Tally](tally.xyz). The contract returns different metadata from the token itself though to avoid any ambiguity.
+This implements the optional ERC-20 metadata methods, which are not required for the on-chain governor framework to function but improves interoperability with existing tools like [Tally](tally.xyz). The contract returns different metadata from the token itself though to avoid any ambiguity.
 
 - `name`
   - Returns `"Livepeer Voting Power"`
@@ -267,7 +269,7 @@ This implements the optional ERC-20 metadata methods, which is not required for 
 
 [ERC-5805](https://eips.ethereum.org/EIPS/eip-5805) specifies how to express voting power with checkpointing and delegation mechanisms. The interface provided by OpenZeppelin and required by the Governor framework is `IERC5805Upgradeable`, which is based on ERC-5805 but adds or remove a couple methods from it. The `BondingVotes` implementation described here is not fully compliant with these specifications, explained in the Caveats section. Some additional functions were also added as they were required for the rest of the Governor implementation or overall utility of the contract.
 
-The implementation of these interface functions should forward the calls to the lower-level active stake checkpoint functions above. A caveat being that the ERC5805 functions access the stake from the next round when querying for a given round. This is because ERC5805 defines the voting power of an account at timepoint `t` to be the delegated balances when `clock` _overtook_ `t`. In our case this means thatwant the stake of an account at the **end** of the round, instead of at the **start** which is provided by the checkpoint functions. So when querying for the votes at round `r`, these functions actually return the active stake at round `r+1`.
+The implementation of these interface functions should forward the calls to the lower-level active stake checkpoint functions above. A caveat being that the ERC5805 functions access the stake from the next round when querying for a given round. This is because ERC5805 defines the voting power of an account at timepoint `t` to be the delegated balances when `clock` _overtook_ `t`. In this case it means it should use the stake of an account at the **end** of the round, instead of at the **start** which is provided by the checkpoint functions. When querying for the votes at round `r`, these functions should actually return the checkpointed stake at round `r+1`.
 
 - `clock`
   - Returns `ROUNDS_MANAGER.currentRound()`
@@ -298,7 +300,7 @@ The implementation of these interface functions should forward the calls to the 
 The known divergences from the `ERC5805` and `IERC5805Upgradeable` expectations are:
 
 - It does not implement the mutation functions `delegate` and `delegateBySig`. Instead it reverts as detailed above.
-- There is no implementation for the `nonces` function asdon't support the `delegateBySig` either.
+- There is no implementation for the `nonces` function as it doesn't support the `delegateBySig` either.
 - It implements an additional `delegatedAt` abstraction since the custom vote counting module will need that in order to allow delegators to override their transcoders votes.
 - It does not adhere to the invariant that `getPastTotalSupply` matches the sum of all the account's `getPastVotes` in a round (similarly for `totalSupply` and `getVotes`). Instead, it maintains the same behaviors as the existing governance polling system described in LIP-16:
   - It derives the `totalSupply` from the `BONDING_MANAGER.currentRoundTotalActiveStake` – which only considers the active stake, bonded to the top 100 transcoders – while individual account votes come from the bonding checkpoints and provide voting power to all delegated stake – even if not to the top 100.
@@ -423,8 +425,8 @@ Notice that most of the functions from the governor come from OpenZeppelin, eith
 
 ```solidity
 contract LivepeerGovernor is
-    Initializable,
     ManagerProxyTarget,
+    Initializable,
     GovernorUpgradeable,
     GovernorSettingsUpgradeable,
     GovernorTimelockControlUpgradeable,
@@ -432,9 +434,15 @@ contract LivepeerGovernor is
     GovernorVotesQuorumFractionUpgradeable,
     GovernorCountingOverridable
 {
-    function initialize() public;
+    function initialize(
+        uint256 initialVotingDelay,
+        uint256 initialVotingPeriod,
+        uint256 initialProposalThreshold,
+        uint256 initialQuorum,
+        uint256 quota
+    ) public;
 
-    function bumpVotesAddress() external;
+    function bumpGovernorVotesTokenAddress() external;
 
     // Required overrides from inheritance chain
 
@@ -450,8 +458,6 @@ contract LivepeerGovernor is
     // For GovernorCountingOverridable
 
     function votes() public view override returns (IVotes);
-
-    function quota() public view override returns (uint256);
 }
 ```
 
@@ -460,15 +466,16 @@ contract LivepeerGovernor is
 - `initialize`
   - Initializes contract state after deploy.
   - Apart from the already described parameters and the trivial governor `name`, it should initialize all the extensions including:
-    - The votes extension with the `BondingCheckpointsVotes` as its `token` contract
-    - The timelock extension with the `Treasury` as the timelock controller and thus holder of funds and executor of proposals.
-- `bumpVotesAddress`
-  - Updates the static `token` contract field from `GovernorVotesUpgradeable` to match the current address of the `BondingCheckpointsVotes`.
+    - `GovernorSettingsUpgradeable` with the `initialVotingDelay`, `initialVotingPeriod` and `initialProposalThreshold` parameters.
+    - `GovernorVotesQuorumFractionUpgradeable` with the `initialQuorum` parameter.
+    - `GovernorCountingOverridable` with the `quota` parameter.
+    - `GovernorTimelockControlUpgradeable` with the `Treasury` as the timelock controller and thus holder of funds and executor of proposals.
+    - `GovernorVotesUpgradeable` with `BondingVotes` as its `token` contract.
+- `bumpGovernorVotesTokenAddress`
+  - Updates the `token` field from `GovernorVotesUpgradeable` to match the current address of the `BondingVotes`.
 - `proposalThreshold`
   - Should return `GovernorSettingsUpgradeable.proposalThreshold()`
 - `quorumDenominator`
   - Should return `MathUtils.PERC_DIVISOR` (1000000)
 - `votes`
-  - Should return the `BondingCheckpointVotes` contract address.
-- `quota`
-  - Should return `POLL_CREATOR.QUOTA()`
+  - Should return the `BondingVotes` contract address.
