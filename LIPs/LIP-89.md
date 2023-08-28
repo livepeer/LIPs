@@ -92,9 +92,25 @@ There are no backwards incompatibilities introduced by this proposal. However th
 
 ## Test Cases
 
+Refer to the automated tests included in the [implementation](#implementation) below. Specifically:
+
+- on #614:
+  - [`test/unit/BondingManager.js`](https://github.com/livepeer/protocol/pull/614/files#diff-e4a2ded9b6167d11fbd067efcb78ed9b7b3c19666dfa741da3ff17911c907bd7)
+  - [`test/unit/BondingVotes.js`](https://github.com/livepeer/protocol/pull/614/files#diff-e474fa8a99eaf1902ca8d67331d5215c0964776ce9a8620bc6da816d02b7f1c5)
+  - [`contracts/test/TestSortedArrays.sol`](https://github.com/livepeer/protocol/pull/614/files#diff-128a9c287d32dd22a403015bca48205403cfdca355b708bb95781876b8c1f34c)
+  - [`test/integration/BondingVotes.js`](https://github.com/livepeer/protocol/pull/614/files#diff-27240fc1b2de50dce91de61a76cfc1a3357be2340558ecc325a1c32fc50a6d75).
+- on #615:
+  - [`test/unit/GovernorCountingOverridable.js`](https://github.com/livepeer/protocol/pull/615/files#diff-35e264f596beac11c2745d2381a73e1e39af785f18b6c8bcc1f41abc74721c8d)
+  - [`test/integration/LivepeerGovernor.ts`](https://github.com/livepeer/protocol/pull/615/files#diff-976e5e9cbcfaa7286341c7bce2f4bcf2c904d0362422fc243bfc0edacf4596a9)
+
+There is also a devnet deployed on Arbitrum Goerli recorded on [this PR](https://github.com/livepeer/protocol/pull/620). Can interact with the deployed governor in there to make and vote on proposals.
+
 ## Implementation
 
-[Working spike implementation](https://github.com/livepeer/protocol/tree/vg/spike/treasury)
+Working implementation:
+
+- [#614 Creates BondingVotes](https://github.com/livepeer/protocol/pull/614)
+- [#615 Creates LivepeerGovernor](https://github.com/livepeer/protocol/pull/615)
 
 ## Copyright
 

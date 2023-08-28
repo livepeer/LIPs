@@ -132,6 +132,10 @@ contract BondingManager {
 
 ## Test Cases
 
+Refer to the automated tests included in the [implementation](#implementation) below. Specifically in the [`test/unit/BondingManager.js`](https://github.com/livepeer/protocol/pull/616/files#diff-e4a2ded9b6167d11fbd067efcb78ed9b7b3c19666dfa741da3ff17911c907bd7).
+
+There is also a devnet deployed on Arbitrum Goerli recorded on [this PR](https://github.com/livepeer/protocol/pull/620). Can validate treasury contributions from [transactions like this](https://testnet.arbiscan.io/tx/0x13c3a48b54bc1c63522a1c75c96bd832ca0980db15bcdaa44d392e9fc7092187#eventlog).
+
 ## Implementation
 
 [Access working implementation here.](https://github.com/livepeer/protocol/pull/616)
