@@ -34,8 +34,8 @@ This proposal requires [LIP-91](https://github.com/livepeer/LIPs/blob/master/LIP
 
 We introduce two new parameters to the protocol's `BondingManager`:
 
-* `treasuryRewardCutRate`: The % of newly minted rewards to be routed into the Livepeer Treasury.
-* `treasuryBalanceCeiling`: If the balance of the treasury in LPT is above this value, automatic treasury contributions will halt.
+- `treasuryRewardCutRate`: The % of newly minted rewards to be routed into the Livepeer Treasury.
+- `treasuryBalanceCeiling`: If the balance of the treasury in LPT is above this value, automatic treasury contributions will halt.
 
 Each of these parameters should have a setter in the `BondingManager` which is invokable only by `onlyControllerOwner`.
 
@@ -45,17 +45,17 @@ The `treasuryRewardCutRate` should conform to the protocols standard representat
 
 LPT will be routed into the treasury during the `reward()` transaction invoked by Orchestrators each round.
 
-* In the `BondingManager`'s `rewardWithHint()` function:
-   * Check the current LPT balance on the Livepeer Treasury. If the balance > `treasuryBalanceCeiling`, set `treasuryRewardCutRate = 0`.
-   * Calculate the totalRewards available and mint them based on the Orchestrator's delegate stake as usual.
-   * Calculate the treasuryRewards as a % of the totalRewards based upon the `treasuryRewardCutRate`. Calculate the transcoderRewards by subtracting the treasuryRewards from the totalRewards.
-   * Route the treasuryRewards into the Livepeer Treasury.
-   * Route the transcoderRewards to the orchestrator as usual.
-   
+- In the `BondingManager`'s `rewardWithHint()` function:
+  - Check the current LPT balance on the Livepeer Treasury. If the balance > `treasuryBalanceCeiling`, set `treasuryRewardCutRate = 0`.
+  - Calculate the totalRewards available and mint them based on the Orchestrator's delegate stake as usual.
+  - Calculate the treasuryRewards as a % of the totalRewards based upon the `treasuryRewardCutRate`. Calculate the transcoderRewards by subtracting the treasuryRewards from the totalRewards.
+  - Route the treasuryRewards into the Livepeer Treasury.
+  - Route the transcoderRewards to the orchestrator as usual.
+
 ### Initial Values
 
-* `treasuryRewardCutRate`: 10%
-* `treasuryBalanceCeiling`: 750000 LPT 
+- `treasuryRewardCutRate`: 10%
+- `treasuryBalanceCeiling`: 750000 LPT
 
 ## Specification Rationale
 
@@ -75,17 +75,70 @@ As for the proposed value of the `treasuryBalanceCeiling`, this represents a bit
 
 I will leave the modeling and guesswork of the representative $ value of this treasury based on LPT price outside of this proposal, because 1) we know that that swings with the markets and is unpredictable, and 2) these values can be easily changed via governance should the community wish to react to changing market conditions and evidenced based performance of the treasury.
 
+### Backwards Compatibility
 
-## Backwards Compatibility
+There are no backwards incompatibilities introduced by this proposal.
 
-There are no backwards incompatibilities introduced by this proposal. 
+## Technical Specification
+
+This requires changes a couple changes in `BondingManager`. The core of it being an update to the reward calculation functions to take a cut rate and mint the treasury rewards before getting to the transcoder/delegators actual rewards.
+
+The cut rate and the balance ceiling are configured as parameters on `BondingManager` and can only be updated by the controller owner. When the `treasuryRewardCut` is updated, it only takes effect on the next round initialization, to avoid any gambling opportunities with timing your transactions within a round – e.g. reward calls or redeeming tickets before/after cut rate changes.
+
+### Parameters
+
+```solidity
+contract BondingManager {
+    function treasuryRewardCut() external view returns (uint256);
+    function setTreasuryRewardCut(uint256 _value) external;
+
+    function nextRoundTreasuryRewardCut() external view returns (uint256);
+
+    function treasuryBalanceCeiling() external view returns (uint256);
+    function setTreasuryBalanceCeiling(uint256 _value) external;
+}
+```
+
+- `treasuryRewardCut`: The percentage that the treasury should receive from the protocol inflationary rewards.
+  - Initial value: `1e26` (on the next round after the setting param)
+  - This value represents a 10% percentage as per [the rationale above](#initial-values-rationale).
+  - Represented in 27-digit decimal precision corresponding to reward calculations precision since [LIP-71](https://github.com/livepeer/LIPs/issues/71).
+- `setTreasuryRewardCut`: Sets `treasuryRewardCut` indirectly on the next round.
+  - Should revert if the caller is not the protocol controller owner.
+  - Notice that this setter should not change the value of `treasuryRewardCut` directly but only the `nextRoundTreasuryRewardCut` below.
+- `nextRoundTreasuryRewardCut`: Parameter that gets set on the setter for reward cut, only propagating to the actual
+  reward cut on the next round initialization.
+  - Initial value: `1e26`
+  - Same as above.
+- `treasuryBalanceCeiling`: Limit that if reached by the LPT balance of the treasury should automatically halt treasury contributions (`treasuryRewardCut=0`) on the next round.
+  - Initial value: `750000e18`
+  - This value represents 750000 LPT as per [the rationale above](#initial-values-rationale).
+- `setTreasuryBalanceCeiling`: Sets `treasuryBalanceCeiling` parameter immediately..
+  - Should revert if the caller is not the protocol controller owner.
+  - The value of `treasuryBalanceCeiling` parameter should be updated immediately, not on the next round.
+
+### Behavior changes
+
+- `setCurrentRoundTotalActiveStake`: which is the function called during round initialization on the `BondingManager`.
+  - After this change, it should start propagating the `nextRoundTreasuryRewardCut` value to the `treasuryRewardCut` parameter, which is the value actually used on the reward calculations below.
+  - It sould emit the `ParameterUpdate` event for `treasuryRewardCut` if it changed.
+- `rewardWithHint`: where rewards are claimed by a transcoder and actually minted to the bond.
+  - After this change, the actual rewards provided to the transcoders delegators (including itself), should be reduced by exactly the `treasuryRewardCut` percentage.
+  - It should also mint and transfer tokens to the treasury corresponding to the reduction above.
+  - If the balance of the treasury after the transfer is higher than the ceiling, it should also set the `treasuryRewardCut` to `0` starting in the next round.
+- `updateTranscoderWithFees`: called by `TicketBroker` when a winning ticket is redeemed.
+  - When the transcoder has skipped the previous round reward call, this function has to re-calculate the rewards from the current round, so it needs to take the treasury contributions in consideration as well.
+  - This function doesn't actually claim any rewards, so there's no token minting/transferring nor ceiling checks.
 
 ## Test Cases
 
+Refer to the automated tests included in the [implementation](#implementation) below. Specifically in the [`test/unit/BondingManager.js`](https://github.com/livepeer/protocol/pull/616/files#diff-e4a2ded9b6167d11fbd067efcb78ed9b7b3c19666dfa741da3ff17911c907bd7).
+
+There is also a devnet deployed on Arbitrum Goerli recorded on [this PR](https://github.com/livepeer/protocol/pull/620). Can validate treasury contributions from [transactions like this](https://testnet.arbiscan.io/tx/0x13c3a48b54bc1c63522a1c75c96bd832ca0980db15bcdaa44d392e9fc7092187#eventlog).
 
 ## Implementation
 
-[Working spike implementation](https://github.com/livepeer/protocol/tree/vg/spike/treasury)
+[Access working implementation here.](https://github.com/livepeer/protocol/pull/616)
 
 ## Copyright
 

@@ -30,8 +30,8 @@ While important, building governance and treasury management tools are not core 
 
 Because this spec covers updates across many areas of the Livepeer protocol, it first attempt to explain a plain English writeup of the intended behaviors encoded into the treasury and associated code updates to capture voting state. But it will be accompanied by two additional assets:
 
-1) A rigorous technical specification of the updates. This will allow an auditor to confirm that the implementation matches the specificly intended behavior.
-2) A reference implementation.
+1. A rigorous technical specification of the updates. This will allow an auditor to confirm that the implementation matches the specificly intended behavior.
+2. A reference implementation.
 
 Where the English description contained in this proposal leaves ambiguity, seems at odds with, or omits certain detail, the rigorous technical spec should always take priority.
 
@@ -43,9 +43,9 @@ A Livepeer Treasury will be created using the popular [Governor Framework](https
 
 There are three main parameters to creating a governor instance:
 
-* **Voting Delay** - we propose initializing with a 1 round voting delay, from when proposals are made, until they can be voted on.
-* **Voting Period** - we propose initializing with a 10 round voting period.
-* **Proposal Threshold** - we propose initializing with a 100 LPT minimum staked balance to make a proposal, which matches Livepeer's existing governance.
+- **Voting Delay** - we propose initializing with a 1 round voting delay, from when proposals are made, until they can be voted on.
+- **Voting Period** - we propose initializing with a 10 round voting period.
+- **Proposal Threshold** - we propose initializing with a 100 LPT minimum staked balance to make a proposal, which matches Livepeer's existing governance.
 
 The Livepeer `LivepeerGovernor` will be the instance of the Governor/Treasury and will be registered with the `Controller` as are all the other smart contracts in the protocol.
 
@@ -53,28 +53,25 @@ Upon creation, LPT and other assets can be transfered into this smart contract v
 
 The mechanisms for making proposals via the `LivepeerGovernor`, and voting on proposals via the voting power and tallying mechanisms are described below.
 
-
 #### Governance over the treasury
 
 **Proposals**
 
 Proposals can be made by any user with a staked LPT balance exceeding the `Proposal Threshold`. Users will be able to submit text and media supported proposals, along with an amount of LPT to be released from the treasury to a specific address if the proposal passes.
 
-
 **Stake snapshotting**
 
 The spirit of Livepeer's existing delegated stake weighted voting for governance actions captured in [LIP-19](https://github.com/dob/LIPs/blob/dob/delta/LIPs/LIP-19.md) is maintained in this LIP for treasury management. Orchestrators can vote on proposals carrying the full weight of their delegated stake, however any delegator can show up to override the vote of their orchestrator on behalf of their own stake. However, there are some differences in the mechanics in order to support the Governor framework. The largest is that:
 
-* **Stake amounts must be snapshotted at the start round of voting on a proposal**, whereas in existing Livepeer governance stake amounts are tallied at the conclusion of a proposal.
+- **Stake amounts must be snapshotted at the start round of voting on a proposal**, whereas in existing Livepeer governance stake amounts are tallied at the conclusion of a proposal.
 
 This update requires a new stake snapshotting library in the Livepeer protocol smart contracts, and a number of hooks in stake related actions within the existing BondingManager.
-
 
 **Voting**
 
 When proposals are made onchain, they are introduced with a `Voting Delay` and a `Voting Period`. This LIP proposes the initial values of these as 1 round and 10 rounds respectively. After the `Voting Delay` has passed, delegators and orchestrators can vote for, against, or abstain on proposals until the `Voting Period` has ended. Abstained votes will count towards qorum, but will not affect the for or against tallies.
 
-* The `QUORUM` and `QUOTA` values from Livepeer's existing governance will be used to determine whether the proposal has received enough votes to be valid, and if the poll passed or failed. At the time of writing, then `QUORUM` value is 33% of active stake, and the `QUOTA` is 50%, meaning that as long as 1/3rd of active stake votes, if the majority of the votes are in favor passing, the proposal will pass.
+- The `QUORUM` and `QUOTA` values from Livepeer's existing governance will be used to determine whether the proposal has received enough votes to be valid, and if the poll passed or failed. At the time of writing, then `QUORUM` value is 33% of active stake, and the `QUOTA` is 50%, meaning that as long as 1/3rd of active stake votes, if the majority of the votes are in favor passing, the proposal will pass.
 
 **Execution**
 
@@ -82,26 +79,38 @@ Upon the end of the `Voting Period`, it will be determinable onchain whether the
 
 In the future, additional transaction types that can be executed include sending additional assets in the treasury beyond LPT, or even making protocol updates should the community vote to leverage this governor framework as the owner of the Livepeer protocol.
 
+### Technical Specification
 
-### Rigorous Technical Spec
-
-See [the technical spec here](../assets/treasury_technical_spec.md).
-
+[Read the technical spec here.](../assets/lip-89/treasury_technical_spec.md)
 
 ## Backwards Compatibility
 
 There are no backwards incompatibilities introduced by this proposal. However there are a couple small variations from Livepeer's existing protocol governance due to implementation requirements. They include:
 
-* Voting power is determined as of the round at which the voting window for a proposal begins. Whereas in existing protocol governance, voting power is determined at the end round of the voting period.
-* Only active Orchestrators and delegators towards active Orchestrators stake will be counted within the quorum calculation, however they can still vote with their own stake. This is a small quirk in the stake accounting details that should have minimal impact, but it's worth noting. If a large block of stake were delegated to a non-active Orchestrator, then technically the number of token to reach quorum would be less than if that stake were delegated toward an active Orchestrators.
-
+- Voting power is determined as of the round at which the voting window for a proposal begins. Whereas in existing protocol governance, voting power is determined at the end round of the voting period.
+- Only active Orchestrators and delegators towards active Orchestrators stake will be counted within the quorum calculation, however they can still vote with their own stake. This is a small quirk in the stake accounting details that should have minimal impact, but it's worth noting. If a large block of stake were delegated to a non-active Orchestrator, then technically the number of token to reach quorum would be less than if that stake were delegated toward an active Orchestrators.
 
 ## Test Cases
 
+Refer to the automated tests included in the [implementation](#implementation) below. Specifically:
+
+- on #614:
+  - [`test/unit/BondingManager.js`](https://github.com/livepeer/protocol/pull/614/files#diff-e4a2ded9b6167d11fbd067efcb78ed9b7b3c19666dfa741da3ff17911c907bd7)
+  - [`test/unit/BondingVotes.js`](https://github.com/livepeer/protocol/pull/614/files#diff-e474fa8a99eaf1902ca8d67331d5215c0964776ce9a8620bc6da816d02b7f1c5)
+  - [`contracts/test/TestSortedArrays.sol`](https://github.com/livepeer/protocol/pull/614/files#diff-128a9c287d32dd22a403015bca48205403cfdca355b708bb95781876b8c1f34c)
+  - [`test/integration/BondingVotes.js`](https://github.com/livepeer/protocol/pull/614/files#diff-27240fc1b2de50dce91de61a76cfc1a3357be2340558ecc325a1c32fc50a6d75).
+- on #615:
+  - [`test/unit/GovernorCountingOverridable.js`](https://github.com/livepeer/protocol/pull/615/files#diff-35e264f596beac11c2745d2381a73e1e39af785f18b6c8bcc1f41abc74721c8d)
+  - [`test/integration/LivepeerGovernor.ts`](https://github.com/livepeer/protocol/pull/615/files#diff-976e5e9cbcfaa7286341c7bce2f4bcf2c904d0362422fc243bfc0edacf4596a9)
+
+There is also a devnet deployed on Arbitrum Goerli recorded on [this PR](https://github.com/livepeer/protocol/pull/620). Can interact with the deployed governor in there to make and vote on proposals.
 
 ## Implementation
 
-[Working spike implementation](https://github.com/livepeer/protocol/tree/vg/spike/treasury)
+Working implementation:
+
+- [#614 Creates BondingVotes](https://github.com/livepeer/protocol/pull/614)
+- [#615 Creates LivepeerGovernor](https://github.com/livepeer/protocol/pull/615)
 
 ## Copyright
 
