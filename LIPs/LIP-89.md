@@ -3,7 +3,7 @@ lip: 89
 title: Livepeer Treasury
 author: Doug Petkanics (@dob), Victor Elias (@victorges)
 type: Standard Track
-status: Draft
+status: Last Call
 created: 2023-06-14
 part-of: 91
 discussions-to: https://forum.livepeer.org/t/lip-livepeer-treasury-bundle-discussion-thread/2115

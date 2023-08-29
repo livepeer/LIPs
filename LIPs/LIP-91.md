@@ -3,7 +3,7 @@ lip: 91
 title: Livepeer Treasury Bundle
 author: Doug Petkanics (@dob), Victor Elias (@victorges)
 type: Meta
-status: Draft
+status: Last Call
 created: 2023-06-29
 requires: 89, 90
 discussions-to: https://forum.livepeer.org/t/lip-livepeer-treasury-bundle-discussion-thread/2115
