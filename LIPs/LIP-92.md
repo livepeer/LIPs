@@ -83,30 +83,30 @@ There are no backwards incompatibilities introduced by this proposal.
 
 This requires changes a couple changes in `BondingManager`. The core of it being an update to the reward calculation functions to take a cut rate and mint the treasury rewards before getting to the transcoder/delegators actual rewards.
 
-The cut rate and the balance ceiling are configured as parameters on `BondingManager` and can only be updated by the controller owner. When the `treasuryRewardCut` is updated, it only takes effect on the next round initialization, to avoid any gambling opportunities with timing your transactions within a round – e.g. reward calls or redeeming tickets before/after cut rate changes.
+The cut rate and the balance ceiling are configured as parameters on `BondingManager` and can only be updated by the controller owner. When the `treasuryRewardCutRate` is updated, it only takes effect on the next round initialization, to avoid any gambling opportunities with timing your transactions within a round – e.g. reward calls or redeeming tickets before/after cut rate changes.
 
 ### Parameters
 
 ```solidity
 contract BondingManager {
-    function treasuryRewardCut() external view returns (uint256);
-    function setTreasuryRewardCut(uint256 _value) external;
+    function treasuryRewardCutRate() external view returns (uint256);
+    function setTreasuryRewardCutRate(uint256 _cutRate) external;
 
-    function nextRoundTreasuryRewardCut() external view returns (uint256);
+    function nextRoundTreasuryRewardCutRate() external view returns (uint256);
 
     function treasuryBalanceCeiling() external view returns (uint256);
-    function setTreasuryBalanceCeiling(uint256 _value) external;
+    function setTreasuryBalanceCeiling(uint256 _ceiling) external;
 }
 ```
 
-- `treasuryRewardCut`: The percentage that the treasury should receive from the protocol inflationary rewards.
+- `treasuryRewardCutRate`: The percentage that the treasury should receive from the protocol inflationary rewards.
   - Initial value: `1e26` (on the next round after the setting param)
   - This value represents a 10% percentage as per [the rationale above](#initial-values-rationale).
   - Represented in 27-digit decimal precision corresponding to reward calculations precision since [LIP-71](https://github.com/livepeer/LIPs/issues/71).
-- `setTreasuryRewardCut`: Sets `treasuryRewardCut` indirectly on the next round.
+- `setTreasuryRewardCutRate`: Sets `treasuryRewardCutRate` indirectly on the next round.
   - Should revert if the caller is not the protocol controller owner.
-  - Notice that this setter should not change the value of `treasuryRewardCut` directly but only the `nextRoundTreasuryRewardCut` below.
-- `nextRoundTreasuryRewardCut`: Parameter that gets set on the setter for reward cut, only propagating to the actual
+  - Notice that this setter should not change the value of `treasuryRewardCutRate` directly but only the `nextRoundTreasuryRewardCutRate` below.
+- `nextRoundTreasuryRewardCutRate`: Parameter that gets set on the setter for reward cut, only propagating to the actual
   reward cut on the next round initialization.
   - Initial value: `1e26`
   - Same as above.
@@ -120,12 +120,12 @@ contract BondingManager {
 ### Behavior changes
 
 - `setCurrentRoundTotalActiveStake`: which is the function called during round initialization on the `BondingManager`.
-  - After this change, it should start propagating the `nextRoundTreasuryRewardCut` value to the `treasuryRewardCut` parameter, which is the value actually used on the reward calculations below.
-  - It sould emit the `ParameterUpdate` event for `treasuryRewardCut` if it changed.
+  - After this change, it should start propagating the `nextRoundTreasuryRewardCutRate` value to the `treasuryRewardCutRate` parameter, which is the value actually used on the reward calculations below.
+  - It sould emit the `ParameterUpdate` event for `treasuryRewardCutRate` if it changed.
 - `rewardWithHint`: where rewards are claimed by a transcoder and actually minted to the bond.
-  - After this change, the actual rewards provided to the transcoders delegators (including itself), should be reduced by exactly the `treasuryRewardCut` percentage.
+  - After this change, the actual rewards provided to the transcoders delegators (including itself), should be reduced by exactly the `treasuryRewardCutRate` percentage.
   - It should also mint and transfer tokens to the treasury corresponding to the reduction above.
-  - If the balance of the treasury after the transfer is higher than the ceiling, it should also set the `treasuryRewardCut` to `0` starting in the next round.
+  - If the balance of the treasury after the transfer is higher than the ceiling, it should also set the `treasuryRewardCutRate` to `0` starting in the next round.
 - `updateTranscoderWithFees`: called by `TicketBroker` when a winning ticket is redeemed.
   - When the transcoder has skipped the previous round reward call, this function has to re-calculate the rewards from the current round, so it needs to take the treasury contributions in consideration as well.
   - This function doesn't actually claim any rewards, so there's no token minting/transferring nor ceiling checks.
