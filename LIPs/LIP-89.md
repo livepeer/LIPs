@@ -92,14 +92,16 @@ There are no backwards incompatibilities introduced by this proposal. However th
 
 ## Implementation
 
-Working implementation:
+This LIP was implemented in conjunction with [LIP-92](./LIP-92.md) as part of the Livepeer Delta upgrade. The combined implementation can be found [here](https://github.com/livepeer/protocol/compare/confluence...delta), while a cherry-picked branch with only the specific changes from this LIP can be found [here](https://github.com/livepeer/protocol/compare/confluence...delta-lip91). In case both LIPs pass the combined code will be deployed, otherwise only those changes from this LIP if approved.
+
+The individual changes for this specific LIP were:
 
 - [#614 Creates BondingVotes](https://github.com/livepeer/protocol/pull/614)
 - [#615 Creates LivepeerGovernor](https://github.com/livepeer/protocol/pull/615)
 
 ### Audit
 
-The code has gone through an audit contest with [code4rena](https://code4rena.com/). The contest and results can be found [here.](https://code4rena.com/contests/2023-08-livepeer-onchain-treasury-upgrade)
+The code has gone through an audit contest with [code4rena](https://code4rena.com/). The contest and results can be found [here](https://code4rena.com/contests/2023-08-livepeer-onchain-treasury-upgrade).
 
 The mitigations for the issues found in the audit are in the following PRs:
 

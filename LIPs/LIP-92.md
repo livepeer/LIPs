@@ -132,13 +132,15 @@ contract BondingManager {
 
 ## Implementation
 
-Working implementation:
+This LIP was implemented in conjunction with [LIP-91](./LIP-91.md) as part of the Livepeer Delta upgrade. The combined implementation can be found [here](https://github.com/livepeer/protocol/compare/confluence...delta), while a cherry-picked branch with only the specific changes from this LIP can be found [here](https://github.com/livepeer/protocol/compare/delta-lip91...delta-lip92). This LIP depends on a `Treasury` contract created by LIP-91, so it cannot be deployed separately.
+
+The individual change for this specific LIP was:
 
 - [#616 Treasury rewards contribution](https://github.com/livepeer/protocol/pull/616)
 
 ### Audit
 
-The code has gone through an audit contest with [code4rena](https://code4rena.com/). The contest and results can be found [here.](https://code4rena.com/contests/2023-08-livepeer-onchain-treasury-upgrade)
+The code has gone through an audit contest with [code4rena](https://code4rena.com/). The contest and results can be found [here](https://code4rena.com/contests/2023-08-livepeer-onchain-treasury-upgrade).
 
 There was only 1 issue found regarding the treasury contribution, which was mitigated in the following PR:
 
