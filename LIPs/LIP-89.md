@@ -108,6 +108,7 @@ The mitigations for the issues found in the audit are in the following PRs:
 - [#626 Prevent overriding votes of non transcoders](https://github.com/livepeer/protocol/pull/626)
 - [#628 Prohibit bonds for the zero address](https://github.com/livepeer/protocol/pull/628)
 - [#622 Fixes for other minor issues](https://github.com/livepeer/protocol/pull/622)
+- [#629 Small follow-up fixing a documentation](https://github.com/livepeer/protocol/pull/629)
 
 ## Testing
 
