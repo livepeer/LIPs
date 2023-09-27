@@ -140,7 +140,7 @@ Working implementation:
 
 The code has gone through an audit contest with [code4rena](https://code4rena.com/). The contest and results can be found [here.](https://code4rena.com/contests/2023-08-livepeer-onchain-treasury-upgrade)
 
-There was only 1 finding regarding the treasury contribution, which was properly mitigated here:
+There was only 1 issue found regarding the treasury contribution, which was mitigated in the following PR:
 
 - [#624 Fix treasury cut precision on fee withdrawal](https://github.com/livepeer/protocol/pull/624)
 
