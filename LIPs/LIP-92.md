@@ -130,15 +130,37 @@ contract BondingManager {
   - When the transcoder has skipped the previous round reward call, this function has to re-calculate the rewards from the current round, so it needs to take the treasury contributions in consideration as well.
   - This function doesn't actually claim any rewards, so there's no token minting/transferring nor ceiling checks.
 
-## Test Cases
-
-Refer to the automated tests included in the [implementation](#implementation) below. Specifically in the [`test/unit/BondingManager.js`](https://github.com/livepeer/protocol/pull/616/files#diff-e4a2ded9b6167d11fbd067efcb78ed9b7b3c19666dfa741da3ff17911c907bd7).
-
-There is also a devnet deployed on Arbitrum Goerli recorded on [this PR](https://github.com/livepeer/protocol/pull/620). Can validate treasury contributions from [transactions like this](https://testnet.arbiscan.io/tx/0x13c3a48b54bc1c63522a1c75c96bd832ca0980db15bcdaa44d392e9fc7092187#eventlog).
-
 ## Implementation
 
-[Access working implementation here.](https://github.com/livepeer/protocol/pull/616)
+This LIP was implemented in conjunction with [LIP-91](./LIP-91.md) as part of the Livepeer Delta upgrade. The combined implementation can be found [here](https://github.com/livepeer/protocol/compare/confluence...delta), while a cherry-picked branch with only the specific changes from this LIP can be found [here](https://github.com/livepeer/protocol/compare/delta-lip91...delta-lip92). This LIP depends on a `Treasury` contract created by LIP-91, so it cannot be deployed separately.
+
+The individual change for this specific LIP was:
+
+- [#616 Treasury rewards contribution](https://github.com/livepeer/protocol/pull/616)
+
+### Audit
+
+The code has gone through an audit contest with [code4rena](https://code4rena.com/). The contest and results can be found [here](https://code4rena.com/contests/2023-08-livepeer-onchain-treasury-upgrade).
+
+There was only 1 issue found regarding the treasury contribution, which was mitigated in the following PR:
+
+- [#624 Fix treasury cut precision on fee withdrawal](https://github.com/livepeer/protocol/pull/624)
+
+## Testing
+
+### Test Cases
+
+Refer to the automated tests included in the [implementation](#implementation) above. Specifically:
+
+- [`test/unit/BondingManager.js`](https://github.com/livepeer/protocol/pull/616/files#diff-e4a2ded9b6167d11fbd067efcb78ed9b7b3c19666dfa741da3ff17911c907bd7).
+
+### Devnet
+
+There is also a devnet deployed on Arbitrum Goerli:
+
+- Recorded deployment on [PR #620](https://github.com/livepeer/protocol/pull/620)
+- Explorer available on [goerli-explorer.livepeer.monster](https://goerli-explorer.livepeer.monster/treasury)
+- Treasury contributions can be validated from [transactions like this](https://testnet.arbiscan.io/tx/0x13c3a48b54bc1c63522a1c75c96bd832ca0980db15bcdaa44d392e9fc7092187#eventlog).
 
 ## Copyright
 

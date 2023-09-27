@@ -90,9 +90,33 @@ There are no backwards incompatibilities introduced by this proposal. However th
 - Voting power is determined as of the round at which the voting window for a proposal begins. Whereas in existing protocol governance, voting power is determined at the end round of the voting period.
 - Only active Orchestrators and delegators towards active Orchestrators stake will be counted within the quorum calculation, however they can still vote with their own stake. This is a small quirk in the stake accounting details that should have minimal impact, but it's worth noting. If a large block of stake were delegated to a non-active Orchestrator, then technically the number of token to reach quorum would be less than if that stake were delegated toward an active Orchestrators.
 
-## Test Cases
+## Implementation
 
-Refer to the automated tests included in the [implementation](#implementation) below. Specifically:
+This LIP was implemented in conjunction with [LIP-92](./LIP-92.md) as part of the Livepeer Delta upgrade. The combined implementation can be found [here](https://github.com/livepeer/protocol/compare/confluence...delta), while a cherry-picked branch with only the specific changes from this LIP can be found [here](https://github.com/livepeer/protocol/compare/confluence...delta-lip91). In case both LIPs pass the combined code will be deployed, otherwise only those changes from this LIP if approved.
+
+The individual changes for this specific LIP were:
+
+- [#614 Creates BondingVotes](https://github.com/livepeer/protocol/pull/614)
+- [#615 Creates LivepeerGovernor](https://github.com/livepeer/protocol/pull/615)
+
+### Audit
+
+The code has gone through an audit contest with [code4rena](https://code4rena.com/). The contest and results can be found [here](https://code4rena.com/contests/2023-08-livepeer-onchain-treasury-upgrade).
+
+The mitigations for the issues found in the audit are in the following PRs:
+
+- [#623 Add missing checkpoint](https://github.com/livepeer/protocol/pull/623)
+- [#625 Voting power only for stake from/to registered transcoders](https://github.com/livepeer/protocol/pull/625)
+- [#626 Prevent overriding votes of non transcoders](https://github.com/livepeer/protocol/pull/626)
+- [#628 Prohibit bonds for the zero address](https://github.com/livepeer/protocol/pull/628)
+- [#622 Fixes for other minor issues](https://github.com/livepeer/protocol/pull/622)
+- [#629 Small follow-up fixing a documentation](https://github.com/livepeer/protocol/pull/629)
+
+## Testing
+
+### Test Cases
+
+Refer to the automated tests included in the [implementation](#implementation) above. Specifically:
 
 - on #614:
   - [`test/unit/BondingManager.js`](https://github.com/livepeer/protocol/pull/614/files#diff-e4a2ded9b6167d11fbd067efcb78ed9b7b3c19666dfa741da3ff17911c907bd7)
@@ -103,14 +127,12 @@ Refer to the automated tests included in the [implementation](#implementation) b
   - [`test/unit/GovernorCountingOverridable.js`](https://github.com/livepeer/protocol/pull/615/files#diff-35e264f596beac11c2745d2381a73e1e39af785f18b6c8bcc1f41abc74721c8d)
   - [`test/integration/LivepeerGovernor.ts`](https://github.com/livepeer/protocol/pull/615/files#diff-976e5e9cbcfaa7286341c7bce2f4bcf2c904d0362422fc243bfc0edacf4596a9)
 
-There is also a devnet deployed on Arbitrum Goerli recorded on [this PR](https://github.com/livepeer/protocol/pull/620). Can interact with the deployed governor in there to make and vote on proposals.
+### Devnet
 
-## Implementation
+There is also a devnet deployed on Arbitrum Goerli:
 
-Working implementation:
-
-- [#614 Creates BondingVotes](https://github.com/livepeer/protocol/pull/614)
-- [#615 Creates LivepeerGovernor](https://github.com/livepeer/protocol/pull/615)
+- Recorded deployment on [PR #620](https://github.com/livepeer/protocol/pull/620)
+- Explorer available on [goerli-explorer.livepeer.monster](https://goerli-explorer.livepeer.monster/treasury)
 
 ## Copyright
 
