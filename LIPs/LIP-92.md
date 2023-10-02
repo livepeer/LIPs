@@ -3,7 +3,7 @@ lip: 92
 title: Treasury Contribution Percentage
 author: Doug Petkanics (@dob), Victor Elias (@victorges)
 type: Standard Track
-status: Last Call
+status: Proposed
 created: 2023-06-14
 discussions-to: https://forum.livepeer.org/t/lip-treasury-contribution-percentage-discussion-thread/2116
 requires: 91
