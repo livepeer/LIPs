@@ -3,7 +3,7 @@ lip: 90
 title: Funding Entity Conventions
 author: Doug Petkanics (@dob)
 type: Meta
-status: Last Call
+status: Proposed
 created: 2023-06-29
 part-of: 91
 discussions-to: https://forum.livepeer.org/t/lip-livepeer-treasury-bundle-discussion-thread/2115 
