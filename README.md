@@ -33,7 +33,7 @@ The first PR should contain the first draft of an LIP. An editor will manually r
 | [73](LIPs/LIP-73.md) | Confluence - Arbitrum One Migration                     | Final     |
 | [74](LIPs/LIP-74.md) | L1 Minting and L2 Staking                               | Abandoned |
 | [83](LIPs/LIP-83.md) | roundLength Parameter Update                            | Final     |
-| [89](LIPs/LIP-89.md) | Livepeer Treasury                                       | Last Call |
-| [90](LIPs/LIP-90.md) | Funding Entity Conversations                            | Last Call |
-| [91](LIPs/LIP-91.md) | Livepeer Treasury Bundle                                | Last Call |
-| [92](LIPs/LIP-92.md) | Treasury Contribution Percentage                        | Last Call |
+| [89](LIPs/LIP-89.md) | Livepeer Treasury                                       | Final     |
+| [90](LIPs/LIP-90.md) | Funding Entity Conversations                            | Final     |
+| [91](LIPs/LIP-91.md) | Livepeer Treasury Bundle                                | Final     |
+| [92](LIPs/LIP-92.md) | Treasury Contribution Percentage                        | Final     |
