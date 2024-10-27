@@ -1,7 +1,7 @@
 ---
 lip: 73
 title: Confluence - Arbitrum One Migration
-author: Yondon Fu [(@yondonfu)](https://github.com/yondonfu)
+author: Yondon Fu [@yondonfu](https://github.com/yondonfu)
 type: Standard Track
 status: Final
 created: 2021-10-22
