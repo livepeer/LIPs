@@ -1,3 +1,4 @@
+---
 lip: inflation-params
 title: Introduction of Inflation Bounds in the Inflation Adjustment Algorithm
 author:Doug Petkanics (@dob), Marco Van Dijk (@stronk)
