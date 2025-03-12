@@ -1,7 +1,7 @@
 ---
 lip: inflation-params
 title: Introduction of Inflation Bounds in the Inflation Adjustment Algorithm
-author:Doug Petkanics (@dob), Marco Van Dijk (@stronk)
+author: Doug Petkanics (@dob), Marco Van Dijk (@stronk)
 type: Standard Track
 status: Draft
 created: 2025-03-12
