@@ -10,11 +10,11 @@ discussions-to: https://forum.livepeer.org/t/inflation-focused-lip-discussion-th
 
 ## Abstract
 
-This proposal aims to enhance the current inflation adjustment mechanism of the Livepeer protocol by introducing upper and lower bounds to the inflation rate. By setting an `inflationCeiling` and `inflationFloor`, the protocol can maintain inflation within a predefined range, ensuring economic stability and predictability.
+This proposal aims to enhance the current inflation adjustment mechanism of the Livepeer protocol by introducing upper and lower bounds to the inflation rate. By setting an `inflationCeiling` and `inflationFloor`, the protocol can maintain inflation within a predefined range, ensuring economic stability and predictability. In addition, this proposal suggests doubling the rate of `inflationChange` such that an equilibrium is achieved faster.
 
 ## Motivation
 
-The Livepeer protocol dynamically adjusts its inflation rate each round to target a specific percentage of LPT staked (currently 50%). If participation falls below this target, inflation increases to incentivize staking; if above, it decreases. Since the migration to Arbitrum, the participation rate has hovered between 40-50%, leading to a steadily increasing inflation rate, currently at a rate exceeding 25% annually. This high inflation poses risks such as:
+The Livepeer protocol dynamically adjusts its inflation rate each round to target a specific percentage of LPT staked (currently 50%). If participation falls below this target, inflation increases to incentivize staking; if above, it decreases. Since the migration to Arbitrum, the participation rate has hovered between 40-50%, leading to a steadily increasing inflation rate, currently at a rate exceeding 25% annually. Should inflation continue to rise, it poses risks such as:
 
 - **Perceived Over-Issuance**: Excessive token issuance can dilute value and negatively impact token perception.
 - **Economic Imbalance**: Disproportionate rewards relative to network activity can lead to inefficiencies.
@@ -46,8 +46,9 @@ This ensures that the inflation rate remains within the predefined bounds regard
 
 - **`inflationCeiling`**: 750,000, corresponding to 30% per annum
 - **`inflationFloor`**: 50000, corresponding to 2% per annum
+- **`inflationChange`**: 1000, corresponding to a doubling of the current rate of `inflationChange` up from 500.
 
-These values are subject to community discussion and consensus. They are also subject to community governance going forward and can be adjusted via the parameter change LIP process as needed.
+These values are subject to community discussion and consensus. They are also subject to community governance going forward and can be adjusted via the parameter change LIP process as needed. The rationale for setting the `inflationCeiling` to 30% per annum is that it currently is above the current inflation, meaning that this will impose a future potential ceiling to avoid runaway inflation, however it will not alter the current inflation adjustment mechanism until that value is achieved.
 
 Note, that while the above are suggested values, the community should debate these values for inclusion in the final LIP proposal. It has also been considered setting the `inflationCeiling` to something below the current rate, such as 250,000, representing 10% per annum.
 
@@ -77,11 +78,14 @@ The implementation involves:
 
 1. **Parameter Addition**: Introduce `inflationCeiling` and `inflationFloor` to the protocol's parameter set.
 2. **Algorithm Update**: Modify the inflation adjustment logic to incorporate the new bounds.
+3. **Parameter Adjustment**: Modify the `inflationChange` parameter to the newly proposed value of 1000.
 3. **Testing**: Conduct thorough testing to ensure the new logic functions as intended without introducing regressions.
 
-A sample implementation has been provided in [Pull Request #644](https://github.com/livepeer/protocol/pull/644).
+A sample implementation along with initial tests has been provided in [Pull Request #645](https://github.com/livepeer/protocol/pull/645).
 
-Note that productionizing this implementation, testing, simulation, and social trust in said implementation are required before finalizing this LIP to go to proposal. 
+Note that productionizing this implementation, testing, simulation, and social trust in said implementation are required before finalizing this LIP to go to proposal.
+
+This change requires deployment of a new Minter contract, as well as migration of all assets held by the minter to the new contract - including all staked LPT and all deposited ETH. Testing this is not to be taken lightly.
 
 ## Security Considerations
 
