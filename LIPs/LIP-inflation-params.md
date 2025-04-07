@@ -44,9 +44,11 @@ This ensures that the inflation rate remains within the predefined bounds regard
 
 ### Proposed Parameter Values
 
-- **`inflationCeiling`**: 750,000, corresponding to 30% per annum
-- **`inflationFloor`**: 50000, corresponding to 2% per annum
+- **`inflationCeiling`**: 750,000, corresponding to ~31% per annum
+- **`inflationFloor`**: 50000, corresponding to ~2% per annum
 - **`inflationChange`**: 1000, corresponding to a doubling of the current rate of `inflationChange` up from 500.
+
+*The denominator for the above values is 1,000,000,000. A single round in Livepeer is equal to approximately 21 hours. To calculate the per annum maxmimum value for inflation, given the `inflationCeiling` for example, you would use the formula `750000/1000000000*365/(21/24)`.*
 
 These values are subject to community discussion and consensus. They are also subject to community governance going forward and can be adjusted via the parameter change LIP process as needed. The rationale for setting the `inflationCeiling` to 30% per annum is that it currently is above the current inflation, meaning that this will impose a future potential ceiling to avoid runaway inflation, however it will not alter the current inflation adjustment mechanism until that value is achieved.
 
@@ -70,7 +72,7 @@ The proposed parameter values align with observed trends in similar stake-based 
 
 ## Backwards Compatibility
 
-This proposal introduces new parameters to the inflation adjustment algorithm and comes with slight alterations to the existing functionality to calculate inflation. The changes are designed to be backward-compatible, from a participation perspective, ensuring seamless integration with the current protocol that don't require any client changes in terms of protocol function signatures or capabilities.
+This proposal introduces new parameters to the inflation adjustment algorithm and comes with slight alterations to the existing functionality to calculate inflation. The changes are designed to be backward-compatible, from a participation perspective, ensuring seamless integration with the current protocol. However, because a new minter contract is being deployed at a new address, clients may need updates in order to read from the new Minter. Some clients may already read the latest Minter value from the controller registry on chain, in which case they may only need a restart. Though clients that have hardcoded the Minter address, will have to update.
 
 ## Implementation
 
