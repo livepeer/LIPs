@@ -59,6 +59,7 @@ The mechanisms for making proposals via the `LivepeerGovernor`, and voting on pr
 
 Proposals can be made by any user with a staked LPT balance exceeding the `Proposal Threshold`. Users will be able to submit text and media supported proposals, along with an amount of LPT to be released from the treasury to a specific address if the proposal passes.
 
+<a id="eligibility-stake-snapshotting"></a>
 **Stake snapshotting**
 
 The spirit of Livepeer's existing delegated stake weighted voting for governance actions captured in [LIP-19](https://github.com/dob/LIPs/blob/dob/delta/LIPs/LIP-19.md) is maintained in this LIP for treasury management. Orchestrators can vote on proposals carrying the full weight of their delegated stake, however any delegator can show up to override the vote of their orchestrator on behalf of their own stake. However, there are some differences in the mechanics in order to support the Governor framework. The largest is that:
