@@ -38,4 +38,4 @@ The first PR should contain the first draft of an LIP. An editor will manually r
 | [91](LIPs/LIP-91.md)   | Livepeer Treasury Bundle                                               | Final     |
 | [92](LIPs/LIP-92.md)   | Treasury Contribution Percentage                                       | Final     |
 | [100](LIPs/LIP-100.md) | Introduction of Inflation Bounds in the Inflation Adjustment Algorithm | Draft     |
-| [101](LIPs/LIP-101.md) | Restart Treasury Reward Cut                                            | Draft     |
+| [101](LIPs/LIP-101.md) | Restart Treasury Reward Cut                                            | Proposed  |
