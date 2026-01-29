@@ -5,7 +5,7 @@ author: Andrew Macpherson (@awma), Saadinur Azisbek uulu (@eager1999)
 type: Parameter
 status: Draft
 created: 2025-11-21
-discussions-to: TODO
+discussions-to: https://forum.livepeer.org/t/pre-proposal-put-the-brakes-on-lpt-emissions/3211
 
 ---
 
