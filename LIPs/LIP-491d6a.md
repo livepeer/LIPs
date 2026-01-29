@@ -1,7 +1,7 @@
 ---
 lip: TODO
 title: Put the brakes on LPT emissions
-author: Andrew Macpherson (@awma)
+author: Andrew Macpherson (@awma), Saadinur Azisbek uulu (@eager1999)
 type: Parameter
 status: Draft
 created: 2025-11-21
