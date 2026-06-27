@@ -3,7 +3,7 @@ lip: 3
 title: Ability to update registered solver in LivepeerVerifier
 author: Yondon Fu <yondon@livepeer.org>
 type: Standard Track
-status: Final 
+status: Final
 created: 2018-05-15
 ---
 
