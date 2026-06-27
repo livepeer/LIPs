@@ -28,10 +28,10 @@ jobs:
   reconcile:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
         with:
-          node-version: "20"
+          node-version: "24"
 
       - name: Reconcile documented status against on-chain polls
         env:
@@ -41,7 +41,7 @@ jobs:
 
       - name: Open PR if status edits were applied
         if: ${{ hashFiles(format('{0}/pr-body.md', runner.temp)) != '' }}
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           branch: bot/lip-onchain-reconcile
           base: master
