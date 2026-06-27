@@ -1,0 +1,55 @@
+name: LIP on-chain status reconcile
+
+# Weekly check that compares each LIP's documented status against the outcome of
+# its on-chain LIP-16 governance poll (via scripts/reconcile-onchain.mjs) and, if
+# anything diverges, opens a ready-to-merge PR with the suggested status edits.
+# The PR is editorially gated — it is never auto-merged.
+#
+# Required configuration:
+#   - Secret SUBGRAPH_URL: the Livepeer subgraph GraphQL endpoint, e.g.
+#     https://gateway.thegraph.com/api/<API_KEY>/subgraphs/id/FE63YgkzcpVocxdCEyEYbvjYqEf2kb1A6daMYRxmejYC
+#   - Repo setting: Settings > Actions > General > "Allow GitHub Actions to
+#     create and approve pull requests" must be enabled.
+
+on:
+  schedule:
+    - cron: "0 9 * * 1" # Mondays 09:00 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: lip-onchain-reconcile
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Reconcile documented status against on-chain polls
+        env:
+          SUBGRAPH_URL: ${{ secrets.SUBGRAPH_URL }}
+          PR_BODY_PATH: ${{ runner.temp }}/pr-body.md
+        run: node scripts/reconcile-onchain.mjs
+
+      - name: Open PR if status edits were applied
+        if: ${{ hashFiles(format('{0}/pr-body.md', runner.temp)) != '' }}
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: bot/lip-onchain-reconcile
+          base: master
+          title: "chore: reconcile LIP status with on-chain poll outcomes"
+          body-path: ${{ runner.temp }}/pr-body.md
+          labels: lip-status
+          delete-branch: true
+          commit-message: |
+            chore: reconcile LIP status with on-chain poll outcomes
+
+            Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
