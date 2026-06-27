@@ -1,0 +1,25 @@
+name: LIP status check
+
+# Fails when a LIP's status disagrees between its file frontmatter and the
+# README index table (see scripts/check-lip-status.mjs). Add this as a required
+# status check in branch protection to block half-updated status changes.
+
+on:
+  pull_request:
+    paths:
+      - "LIPs/**"
+      - "README.md"
+      - "scripts/check-lip-status.mjs"
+      - ".github/workflows/lip-status-check.yml"
+  push:
+    branches: [master]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: node scripts/check-lip-status.mjs
