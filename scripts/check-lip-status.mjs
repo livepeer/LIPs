@@ -13,7 +13,10 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const lipsDir = join(root, "LIPs");
 const readmePath = join(root, "README.md");
 
-// Allowed statuses per LIP-1 ("LIP Statuses").
+// Allowed statuses, defined by LIP-1 ("LIP Statuses"). LIP-1 is the source of
+// truth; this list is intentionally hardcoded rather than parsed from LIP-1's
+// prose. The set is governance-level and changes essentially never — if LIP-1
+// ever adds/removes a status, update this set in the same PR.
 const VALID = new Set([
   "Draft",
   "Last Call",
