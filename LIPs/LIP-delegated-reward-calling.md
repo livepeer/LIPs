@@ -5,7 +5,7 @@ author: Rick Staa (@rickstaa), Crunchy Carrot (@SidestreamCrunchyCarrot), Nico V
 type: Standard Track
 status: Draft
 created: 2026-07-02
-discussions-to: <forum thread URL TBD>
+discussions-to: https://forum.livepeer.org/t/lip-delegated-reward-calling-discussion-thread/3278
 ---
 
 ## Abstract
