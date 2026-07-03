@@ -1,7 +1,7 @@
 ---
 lip: 108
 title: Delegated Reward Calling
-author: Rick Staa (@rickstaa), <SIDESSTREAM_MEMBER> (@<SIDESTREAM_MEMBER_GITHUB>), Nico Vergauwen (@kyriediculous)
+author: Rick Staa (@rickstaa), Crunchy Carrot (@SidestreamCrunchyCarrot), Nico Vergauwen (@kyriediculous)
 type: Standard Track
 status: Draft
 created: 2026-07-02
