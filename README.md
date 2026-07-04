@@ -40,4 +40,4 @@ The first PR should contain the first draft of an LIP. An editor will manually r
 | [100](LIPs/LIP-100.md) | Introduction of Inflation Bounds in the Inflation Adjustment Algorithm | Abandoned |
 | [101](LIPs/LIP-101.md) | Restart Treasury Reward Cut                                            | Final     |
 | [107](LIPs/LIP-107.md) | Recalibrate LPT Emissions Parameters                                   | Rejected  |
-
+| [118](LIPs/LIP-118.md) | Delegated Reward Calling                                               | Draft     |
