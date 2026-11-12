@@ -4,13 +4,10 @@ name: LIP status check
 # README index table (see scripts/check-lip-status.mjs). Add this as a required
 # status check in branch protection to block half-updated status changes.
 
+# No paths filter: a required check must report on every PR, and a
+# path-filtered workflow reports nothing on PRs outside its paths.
 on:
   pull_request:
-    paths:
-      - "LIPs/**"
-      - "README.md"
-      - "scripts/check-lip-status.mjs"
-      - ".github/workflows/lip-status-check.yml"
   push:
     branches: [master]
 
